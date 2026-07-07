@@ -1,9 +1,9 @@
-﻿import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { seedData } from "./seedData.js";
 
-const dbPath = resolve(process.cwd(), "data", "db.json");
+const dbPath = process.env.LOCAL_DB_PATH || (process.env.NETLIFY ? resolve("/tmp", "eventra-db.json") : resolve(process.cwd(), "data", "db.json"));
 
 export function createStore() {
   mkdirSync(dirname(dbPath), { recursive: true });
