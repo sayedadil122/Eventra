@@ -3,7 +3,8 @@ import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { seedData } from "./seedData.js";
 
-const dbPath = process.env.LOCAL_DB_PATH || (process.env.NETLIFY ? resolve("/tmp", "eventra-db.json") : resolve(process.cwd(), "data", "db.json"));
+const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.cwd().startsWith("/var/task"));
+const dbPath = process.env.LOCAL_DB_PATH || (isServerless ? resolve("/tmp", "eventra-db.json") : resolve(process.cwd(), "data", "db.json"));
 
 export function createStore() {
   mkdirSync(dirname(dbPath), { recursive: true });
