@@ -1,0 +1,9 @@
+﻿backend/.env
+backend/data/db.json
+backend/data/*.json
+node_modules/
+backend/node_modules/
+.npm-cache/
+.netlify/
+.DS_Store
+supabase/.temp/

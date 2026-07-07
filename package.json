@@ -1,0 +1,17 @@
+﻿{
+  "name": "eventra",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node -e \"console.log('Eventra static build ready')\"",
+    "test": "cd backend && node --test"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
