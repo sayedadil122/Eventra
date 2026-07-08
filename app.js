@@ -19,12 +19,7 @@ const State = {
  activeQTab: 'Photography',
  simulated: false,
   chartInstance: null,
-  directoryMap: null,
-  directoryMarkers: [],
 };
-
-const GOOGLE_MAPS_API_KEY = "AIzaSyAeH4B-1ijzaWSWSq7geOVHbIidjnWGkzw";
-let googleMapsLoader = null;
 
 function navigateTo(route) {
  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -144,7 +139,6 @@ function renderDirectory(filterType = currentDirectoryTab) {
  if (!el) return;
  const vendors = EVENTRA.vendorProfiles.filter(v => filterType === 'all' || v.type === filterType);
  if (!vendors.length) { el.innerHTML = emptyState('No vendors found for this category.'); return; }
- renderDirectoryMap(vendors);
 
  const iconByType = {
  Hotel: 'hotel',
@@ -194,79 +188,6 @@ function renderDirectory(filterType = currentDirectoryTab) {
  `;
  }).join('');
  lucide.createIcons();
-}
-
-function loadGoogleMaps() {
- if (window.google && window.google.maps) return Promise.resolve(window.google.maps);
- if (googleMapsLoader) return googleMapsLoader;
- googleMapsLoader = new Promise((resolve, reject) => {
- const script = document.createElement('script');
- script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
- script.async = true;
- script.defer = true;
- script.onload = () => resolve(window.google.maps);
- script.onerror = () => reject(new Error('Google Maps failed to load'));
- document.head.appendChild(script);
- });
- return googleMapsLoader;
-}
-
-function renderDirectoryMap(vendors) {
- const mapEl = document.getElementById('directory-map');
- if (!mapEl) return;
- const mappedVendors = vendors.filter(v => Number.isFinite(v.lat) && Number.isFinite(v.lng));
- if (!mappedVendors.length) {
- mapEl.innerHTML = '<div class="map-fallback">Location data is not available for this filter.</div>';
- return;
- }
-
- loadGoogleMaps()
- .then(() => {
- const center = mappedVendors[0];
- if (!State.directoryMap) {
- State.directoryMap = new google.maps.Map(mapEl, {
- center: { lat: center.lat, lng: center.lng },
- zoom: mappedVendors.length === 1 ? 13 : 10,
- mapTypeControl: false,
- streetViewControl: false,
- fullscreenControl: false,
- gestureHandling: 'cooperative',
- styles: [
- { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
- { featureType: 'transit', stylers: [{ visibility: 'off' }] }
- ]
- });
- }
-
- State.directoryMarkers.forEach(marker => marker.setMap(null));
- State.directoryMarkers = [];
-
- const bounds = new google.maps.LatLngBounds();
- mappedVendors.forEach(vendor => {
- const position = { lat: vendor.lat, lng: vendor.lng };
- bounds.extend(position);
- const marker = new google.maps.Marker({
- position,
- map: State.directoryMap,
- title: vendor.name
- });
- const info = new google.maps.InfoWindow({
- content: `<strong>${vendor.name}</strong><br>${vendor.location}<br>${vendor.type}`
- });
- marker.addListener('click', () => info.open(State.directoryMap, marker));
- State.directoryMarkers.push(marker);
- });
-
- if (mappedVendors.length > 1) {
- State.directoryMap.fitBounds(bounds, 36);
- } else {
- State.directoryMap.setCenter({ lat: center.lat, lng: center.lng });
- State.directoryMap.setZoom(13);
- }
- })
- .catch(() => {
- mapEl.innerHTML = `<div class="map-fallback">Map could not load. Vendor locations: ${mappedVendors.map(v => v.location).join(', ')}.</div>`;
- });
 }
 //  FEASIBILITY """"""""""""""""""""""""""""""""""""""""""""
 function renderFeasibility() {
@@ -400,7 +321,7 @@ function renderQuoteCard(v) {
  <span class="badge badge-green ml-auto" style="float:right">Within market range</span>
  </div>
 
- <button class="btn btn-primary btn-sm" onclick="navigateTo('vendors')">Add to Comparison -></button>
+ <button class="btn btn-primary btn-sm" onclick="navigateTo('vendors')">Add to Comparison</button>
  </div>
  `;
 }
@@ -777,7 +698,7 @@ function runSimulation() {
 
  // Use built-in guest impact data for guest type
  if (type === 'guests') {
- titleEl.textContent = `Impact of Adding ${value - 150} Guests (150 -> ${value})`;
+ titleEl.textContent = `Impact of Adding ${value - 150} Guests (150 to ${value})`;
  const scaleFactor = (value - 150) / 30;
  const rows = d.rows.map(r => ({
  ...r,
@@ -916,7 +837,7 @@ function renderTradeoff() {
  ${impactBars('Convenience',s.convenienceImpact)}
  <div class="scenario-note">${s.guestNote}</div>
  <button class="btn ${idx===0?'btn-primary':'btn-outline'} btn-full mt-4" onclick="showToast('Scenario previewed - go to Dashboard to apply')">
- Explore This Scenario ->
+ Explore This Scenario
  </button>
  </div>
  `;
@@ -973,10 +894,10 @@ function renderQuestions(cat) {
  <div class="card card-primary">
  <h4 class="font-semibold mb-2">How to use these questions</h4>
  <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px">
- <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">-></span>Send before paying any advance - vendor responses reveal their transparency</li>
- <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">-></span>A vendor who avoids direct answers to pricing questions is a red flag</li>
- <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">-></span>Request the answers in writing (WhatsApp message or email) for your records</li>
- <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">-></span>Update your quote analysis after receiving the answers</li>
+ <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">Step</span>Send before paying any advance - vendor responses reveal their transparency</li>
+ <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">Step</span>A vendor who avoids direct answers to pricing questions is a red flag</li>
+ <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">Step</span>Request the answers in writing (WhatsApp message or email) for your records</li>
+ <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">Step</span>Update your quote analysis after receiving the answers</li>
  </ul>
  </div>
  `;
