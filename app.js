@@ -124,6 +124,123 @@ function priorityLabel(p) {
  return { must:'Must Solve', should:'Should Solve', supporting:'Supporting', future:'Future V2', emotional:'Emotional Driver' }[p] || p;
 }
 
+function syncFormFromInputs() {
+ const type = document.getElementById('f-type')?.value || State.form.type || 'Engagement';
+ const date = document.getElementById('f-date')?.value || State.form.date || '2026-12-18';
+ const city = document.getElementById('f-city')?.value || State.form.city || 'Mumbai';
+ const guests = parseInt(document.getElementById('f-guests')?.value || State.form.guests || 150, 10);
+ const budget = parseInt(document.getElementById('f-budget')?.value || State.form.budget || 800000, 10);
+ const functions = parseInt(document.getElementById('f-functions')?.value || State.form.functions || 1, 10);
+ const style = document.getElementById('f-style')?.value || State.form.style || 'Elegant & Minimal';
+ const services = [...document.querySelectorAll('#services-pills .pill.active')].map(p => p.dataset.service).filter(Boolean);
+ const priorities = [...document.querySelectorAll('#priority-pills .pill.active')].map(p => p.dataset.priority).filter(Boolean);
+ State.form = { type, date, city, guests, budget, functions, style, services, priorities };
+ return State.form;
+}
+
+function buildBudgetPlan() {
+ const form = syncFormFromInputs();
+ const selected = new Set(form.services.length ? form.services : ['Venue','Catering','Decoration','Photography','Makeup']);
+ const cityMultiplier = { Mumbai:1.15, Delhi:1.1, Bangalore:1.05, Hyderabad:0.95, Chennai:0.95, Pune:0.9, Other:0.85 }[form.city] || 1;
+ const typeMultiplier = form.type.includes('Wedding') ? 1.25
+ : form.type.includes('Birthday') ? 0.65
+ : form.type.includes('Corporate') ? 0.85
+ : form.type.includes('Anniversary') ? 0.75
+ : form.type.includes('Social') ? 0.75
+ : 1;
+ const functionMultiplier = 1 + Math.max(0, form.functions - 1) * 0.18;
+ const guests = Math.max(10, form.guests || 150);
+ const budget = Math.max(10000, form.budget || 0);
+ const scale = cityMultiplier * typeMultiplier * functionMultiplier;
+ const market = {
+ Venue: Math.round((160000 + guests * 350) * scale),
+ Catering: Math.round(guests * 950 * cityMultiplier * typeMultiplier * functionMultiplier),
+ Decoration: Math.round(65000 * scale),
+ Photography: Math.round(70000 * cityMultiplier * (form.type.includes('Birthday') ? 0.75 : 1) * Math.min(1.25, functionMultiplier)),
+ Makeup: Math.round(30000 * cityMultiplier * (form.type.includes('Corporate') ? 0.35 : 1)),
+ Entertainment: Math.round(30000 * cityMultiplier * (form.type.includes('Corporate') ? 1.15 : 1)),
+ Logistics: Math.round((25000 + guests * 100) * cityMultiplier * Math.min(1.25, functionMultiplier))
+ };
+ const weights = { Venue:30, Catering:25, Decoration:10, Photography:10, Makeup:5, Entertainment:5, Logistics:5 };
+ const activeCategories = Object.keys(weights).filter(name => name === 'Logistics' || selected.has(name));
+ const activeWeight = activeCategories.reduce((sum, name) => sum + weights[name], 0);
+ const allocatable = Math.round(budget * 0.9);
+ const categories = activeCategories.map(name => {
+ const allocation = Math.round(allocatable * (weights[name] / activeWeight));
+ const recommended = market[name];
+ const ratio = recommended / Math.max(1, allocation);
+ const risk = ratio > 1.18 ? 'High' : ratio > 0.98 ? 'Medium' : 'Low';
+ const explanation = `${name} realistic target for ${guests} guests in ${form.city}: ${formatINRFull(recommended)}. Your working allocation is ${formatINRFull(allocation)}.`;
+ return { name, icon: categoryIcon(name), recommended, allocation, percent: Math.round(recommended / budget * 100), risk, explanation };
+ });
+ const contingency = Math.round(budget * 0.1);
+ categories.push({ name:'Contingency', icon:'shield', recommended:contingency, allocation:contingency, percent:10, risk:'Locked', explanation:'Keep this reserve locked until all vendor quotes are confirmed.' });
+ const directCost = categories.reduce((sum, c) => sum + c.recommended, 0);
+ const hiddenReserve = Math.round(directCost * 0.07);
+ const estimatedMinCost = directCost + hiddenReserve;
+ const gap = budget - estimatedMinCost;
+ const ratio = budget / Math.max(1, estimatedMinCost);
+ const scorePercent = Math.max(1, Math.min(100, Math.round(ratio * 100)));
+ const score = ratio >= 1.05 ? 'Realistic' : ratio >= 0.9 ? 'Stretch' : 'Unrealistic';
+ return {
+ ...form,
+ score,
+ scorePercent,
+ budget,
+ estimatedMinCost,
+ gap,
+ contingency,
+ hiddenReserve,
+ categories,
+ insight: buildDynamicInsight(form, score, gap, categories, hiddenReserve)
+ };
+}
+
+function categoryIcon(name) {
+ return { Venue:'building-2', Catering:'utensils', Decoration:'sparkles', Photography:'camera', Makeup:'wand-2', Entertainment:'music', Logistics:'truck', Contingency:'shield' }[name] || 'circle-dollar-sign';
+}
+
+function buildDynamicInsight(form, score, gap, categories, hiddenReserve) {
+ const highRisk = categories.filter(c => c.risk === 'High').map(c => c.name);
+ const priorityText = form.priorities?.length ? ` Protect ${form.priorities.join(', ')} while negotiating.` : '';
+ if (score === 'Realistic') {
+ return `Your ${formatINRFull(form.budget)} budget for ${form.guests} guests in ${form.city} is realistic for the selected services. Keep ${formatINRFull(hiddenReserve)} aside for GST, transport, overtime, and service charges.${priorityText}`;
+ }
+ if (score === 'Stretch') {
+ return `Your ${formatINRFull(form.budget)} budget for ${form.guests} guests in ${form.city} can work, but it is tight. Watch ${highRisk.join(', ') || 'vendor add-ons'} first and keep ${formatINRFull(hiddenReserve)} for hidden charges.${priorityText}`;
+ }
+ return `Your ${formatINRFull(form.budget)} budget is short by about ${formatINRFull(Math.abs(gap))} for ${form.guests} guests in ${form.city}. Reduce guest count, simplify high-risk categories, or raise the budget before booking vendors.`;
+}
+
+function calculateVendorTrueCost(vendor, guests = State.form.guests || 150) {
+ const baseCost = vendor.startingPrice * (vendor.priceUnit === 'per plate' ? guests : 1);
+ const gst = baseCost * 0.18;
+ const hiddenCost = vendor.type === 'Farmhouse' ? 45000 : (vendor.type === 'Hotel' ? baseCost * 0.10 : 0);
+ return Math.round(baseCost + gst + hiddenCost);
+}
+
+function targetForVendor(vendor, plan) {
+ const category = vendor.type === 'Hotel' || vendor.type === 'Farmhouse' ? 'Venue'
+ : vendor.type === 'Decorator' ? 'Decoration'
+ : vendor.type === 'Photographer' ? 'Photography'
+ : vendor.type;
+ return plan.categories.find(c => c.name === category)?.recommended || Math.round(plan.budget * 0.15);
+}
+
+function vendorFit(vendor, plan) {
+ const trueCost = calculateVendorTrueCost(vendor, plan.guests);
+ const target = targetForVendor(vendor, plan);
+ const ratio = trueCost / Math.max(1, target);
+ const ratingScore = Number(vendor.rating || 0) * 8;
+ const budgetScore = ratio <= 1 ? 55 : Math.max(0, 55 - Math.round((ratio - 1) * 70));
+ const score = Math.max(1, Math.min(100, Math.round(budgetScore + ratingScore)));
+ const label = ratio <= 0.95 ? 'Good fit for your budget'
+ : ratio <= 1.1 ? 'Possible fit - negotiate extras'
+ : 'Over target - compare carefully';
+ const color = ratio <= 0.95 ? 'green' : ratio <= 1.1 ? 'amber' : 'red';
+ return { trueCost, target, score, label, color };
+}
+
 // """ VENDOR DIRECTORY """""""""""""""""""""""""""""""""""""""
 let currentDirectoryTab = 'all';
 
@@ -137,8 +254,17 @@ function selectDirectoryTab(type, el) {
 function renderDirectory(filterType = currentDirectoryTab) {
  const el = document.getElementById('directory-content');
  if (!el) return;
- const vendors = EVENTRA.vendorProfiles.filter(v => filterType === 'all' || v.type === filterType);
- if (!vendors.length) { el.innerHTML = emptyState('No vendors found for this category.'); return; }
+ const plan = buildBudgetPlan();
+ const selectedCity = String(plan.city || '').toLowerCase();
+ const vendors = EVENTRA.vendorProfiles
+ .filter(v => filterType === 'all' || v.type === filterType)
+ .filter(v => String(v.location || '').toLowerCase().includes(selectedCity))
+ .map(v => ({ ...v, fit: vendorFit(v, plan) }))
+ .sort((a, b) => b.fit.score - a.fit.score);
+ if (!vendors.length) {
+ el.innerHTML = emptyState(`No verified ${filterType === 'all' ? 'vendors' : filterType.toLowerCase() + ' vendors'} found for ${plan.city} yet. Change the city to Mumbai to view the current verified sample vendors, or use the budget plan without vendor suggestions.`);
+ return;
+ }
 
  const iconByType = {
  Hotel: 'hotel',
@@ -155,10 +281,7 @@ function renderDirectory(filterType = currentDirectoryTab) {
  };
 
  el.innerHTML = vendors.map((v, index) => {
- const baseCost = v.startingPrice * (v.priceUnit === 'per plate' ? 150 : 1);
- const gst = baseCost * 0.18;
- const hiddenCost = v.type === 'Farmhouse' ? 45000 : (v.type === 'Hotel' ? baseCost * 0.10 : 0);
- const trueCost = baseCost + gst + hiddenCost;
+ const trueCost = v.fit.trueCost;
  const icon = iconByType[v.type] || 'store';
  const tile = gradientTiles[index % gradientTiles.length];
  const locationLine = v.type === 'Photographer' || v.type === 'Decorator'
@@ -176,11 +299,12 @@ function renderDirectory(filterType = currentDirectoryTab) {
  </div>
  <div class="vendor-rating">* ${v.rating}</div>
  </div>
+ <div class="badge badge-${v.fit.color}" style="width:max-content">${v.fit.label}</div>
  <p class="vendor-description">${v.description}</p>
  <div class="vendor-price-row">
  <div>
- <div class="vendor-price">${formatINRFull(Math.round(trueCost))}</div>
- <div class="vendor-price-caption">all-in for 150 guests</div>
+ <div class="vendor-price">${formatINRFull(trueCost)}</div>
+ <div class="vendor-price-caption">all-in for ${plan.guests} guests - target ${formatINRFull(v.fit.target)}</div>
  </div>
  </div>
  <div class="vendor-risk"><i data-lucide="triangle-alert"></i> ${hiddenWarning}</div>
@@ -191,23 +315,44 @@ function renderDirectory(filterType = currentDirectoryTab) {
 }
 //  FEASIBILITY """"""""""""""""""""""""""""""""""""""""""""
 function renderFeasibility() {
- const cats = EVENTRA.feasibility.categories;
+ const plan = buildBudgetPlan();
+ const cats = plan.categories;
+ const headerText = document.querySelector('#screen-feasibility .page-header p');
+ if (headerText) headerText.textContent = `Is your ${formatINRFull(plan.budget)} budget realistic for ${plan.guests} guests in ${plan.city}?`;
+ const ring = document.getElementById('feas-ring');
+ if (ring) {
+ const circumference = 408.41;
+ ring.style.strokeDashoffset = String(circumference - (circumference * plan.scorePercent / 100));
+ ring.setAttribute('stroke', plan.score === 'Realistic' ? '#10B981' : plan.score === 'Stretch' ? '#F59E0B' : '#EF4444');
+ }
+ const ringLabel = document.querySelector('#screen-feasibility .feasibility-ring-label');
+ if (ringLabel) {
+ ringLabel.textContent = plan.score;
+ ringLabel.style.color = plan.score === 'Realistic' ? 'var(--green)' : plan.score === 'Stretch' ? 'var(--amber)' : 'var(--red)';
+ }
+ const ringSub = document.querySelector('#screen-feasibility .feasibility-ring-sub');
+ if (ringSub) ringSub.textContent = `Feasibility Score - ${plan.scorePercent}%`;
+ const insight = document.querySelector('#screen-feasibility .ai-box-text');
+ if (insight) insight.textContent = plan.insight;
  const catEl = document.getElementById('feas-categories');
  if (!catEl) return;
  catEl.innerHTML = cats.map(c => {
  const pct = c.percent;
  const riskBadge = c.risk === 'Locked'
  ? `<span class="badge badge-grey">Locked</span>`
+ : c.risk === 'High'
+ ? `<span class="badge badge-red">High Risk</span>`
  : c.risk === 'Low'
  ? `<span class="badge badge-green">Low Risk</span>`
  : `<span class="badge badge-amber">Medium Risk</span>`;
+ const barColor = c.risk === 'Locked' ? 'var(--border-2)' : c.risk === 'High' ? 'var(--red)' : c.risk === 'Low' ? 'var(--green)' : 'var(--amber)';
  return `
  <div class="category-row">
  <div class="category-icon"><i data-lucide="${c.icon}"></i></div>
  <div class="category-name">${c.name}</div>
  <div class="category-bar-wrap">
  <div class="category-bar-bg">
- <div class="category-bar-fill" style="width:${pct*3.3}%;background:${c.risk==='Locked'?'var(--border-2)':c.risk==='Low'?'var(--green)':'var(--amber)'}"></div>
+ <div class="category-bar-fill" style="width:${Math.min(100, pct)}%;background:${barColor}"></div>
  </div>
  </div>
  <div class="category-amount">${formatINRFull(c.recommended)}</div>
@@ -217,24 +362,52 @@ function renderFeasibility() {
  `;
  }).join('');
 
+ const summaryRows = document.querySelectorAll('#screen-feasibility .card.mb-4[style*="primary-lt"] .font-bold');
+ if (summaryRows[0]) summaryRows[0].textContent = formatINRFull(plan.budget);
+ if (summaryRows[1]) summaryRows[1].textContent = formatINRFull(plan.estimatedMinCost);
+ if (summaryRows[2]) {
+ summaryRows[2].textContent = plan.gap >= 0 ? `${formatINRFull(plan.gap)} under budget` : `-${formatINRFull(Math.abs(plan.gap))}`;
+ summaryRows[2].style.color = plan.gap >= 0 ? 'var(--green)' : 'var(--red)';
+ }
+ if (summaryRows[3]) summaryRows[3].textContent = formatINRFull(plan.contingency);
+ const progress = document.querySelector('#screen-feasibility .progress-wrap .progress-bar');
+ if (progress) {
+ progress.style.width = `${Math.min(100, Math.round(plan.estimatedMinCost / plan.budget * 100))}%`;
+ progress.className = `progress-bar ${plan.score === 'Realistic' ? 'progress-green' : plan.score === 'Stretch' ? 'progress-amber' : 'progress-red'}`;
+ }
+ const summaryScale = document.querySelectorAll('#screen-feasibility .flex.justify-between.mt-1 .text-xs');
+ if (summaryScale[1]) summaryScale[1].textContent = formatINRFull(plan.budget);
+ const meaningTitle = document.querySelector('#screen-feasibility .card-amber .font-semibold');
+ if (meaningTitle) meaningTitle.textContent = `What "${plan.score}" means`;
+ const meaningText = document.querySelector('#screen-feasibility .card-amber p');
+ if (meaningText) {
+ meaningText.textContent = plan.score === 'Realistic'
+ ? 'Your plan has room to choose dependable vendors. Keep contingency locked and confirm GST, transport, overtime, and service charges in writing.'
+ : plan.score === 'Stretch'
+ ? 'Your plan can work, but one premium vendor or hidden charge can push it over budget. Shortlist vendors that fit the category targets before paying advances.'
+ : 'Your plan is likely over budget. Simplify high-risk categories, reduce guest count, or increase budget before booking vendors.';
+ }
+
  const bm = document.getElementById('feas-benchmarks');
  if (bm) {
- const ranges = [
- { name:'Venue (150 pax)', range:'Rs.1,80,000-Rs.3,20,000', budget:'Rs.2,40,000' },
- { name:'Catering /plate', range:'Rs.1,000-Rs.1,800', budget:'Rs.1,333' },
- { name:'Photography', range:'Rs.55,000-Rs.1,20,000', budget:'Rs.80,000' },
- { name:'Decoration', range:'Rs.60,000-Rs.1,50,000', budget:'Rs.80,000' },
- ];
+ const title = bm.closest('.card')?.querySelector('h4');
+ if (title) title.textContent = `Market Benchmarks - ${plan.city}`;
+ const ranges = cats.filter(c => c.name !== 'Contingency').map(c => ({
+ name: c.name,
+ range: `${formatINRFull(Math.round(c.recommended * 0.9))}-${formatINRFull(Math.round(c.recommended * 1.25))}`,
+ budget: formatINRFull(c.allocation)
+ }));
  bm.innerHTML = ranges.map(r => `
  <div class="flex justify-between items-center py-1 border-b" style="border-color:var(--border)">
  <span style="color:var(--text-2)">${r.name}</span>
  <div class="flex gap-3">
  <span class="text-muted text-xs">Market: ${r.range}</span>
- <span class="font-semibold text-xs" style="color:var(--primary)">Your: ${r.budget}</span>
+ <span class="font-semibold text-xs" style="color:var(--primary)">Allocation: ${r.budget}</span>
  </div>
  </div>
  `).join('');
  }
+ lucide.createIcons();
 }
 
 // """ QUOTE ANALYSIS """""""""""""""""""""""""""""""""""""""""
@@ -549,18 +722,21 @@ function renderHiddenCosts() {
 // """ DASHBOARD """""""""""""""""""""""""""""""""""""""""""""""
 function renderDashboard() {
  const d = EVENTRA.dashboard;
+ const plan = buildBudgetPlan();
+ const committed = 0;
+ const gapText = plan.gap >= 0 ? `${formatINRFull(plan.gap)} under budget` : `${formatINRFull(Math.abs(plan.gap))} over budget`;
 
  // Stat cards
  const statsEl = document.getElementById('dashboard-stats');
  if (statsEl) statsEl.innerHTML = [
- { label:'Total Budget', value: formatINRFull(d.totalBudget), sub:'Your ceiling', icon:'wallet', iconClass:'icon-primary' },
- { label:'Committed So Far', value: formatINRFull(d.committed), sub:`${Math.round(d.committed/d.totalBudget*100)}% of budget`, icon:'check-circle', iconClass:'icon-green' },
- { label:'Est. Final Cost', value: formatINRFull(d.estimatedFinal), sub:'Rs.65,000 over budget', icon:'trending-up', iconClass:'icon-red', valueColor:'var(--red)' },
- { label:'Contingency', value: formatINRFull(d.contingency), sub:'10% reserve - untouched', icon:'shield', iconClass:'icon-amber' },
- { label:'Vendors Selected', value: d.vendorsSelected + ' of ' + d.form?.services?.length || '5', sub:'3 pending decision', icon:'users', iconClass:'icon-primary' },
+ { label:'Total Budget', value: formatINRFull(plan.budget), sub:'Your ceiling', icon:'wallet', iconClass:'icon-primary' },
+ { label:'Committed So Far', value: formatINRFull(committed), sub:'No confirmed vendors yet', icon:'check-circle', iconClass:'icon-green' },
+ { label:'Est. Final Cost', value: formatINRFull(plan.estimatedMinCost), sub:gapText, icon:'trending-up', iconClass:plan.gap >= 0 ? 'icon-green' : 'icon-red', valueColor:plan.gap >= 0 ? 'var(--green)' : 'var(--red)' },
+ { label:'Contingency', value: formatINRFull(plan.contingency), sub:'10% reserve - keep locked', icon:'shield', iconClass:'icon-amber' },
+ { label:'Services Selected', value: plan.services.length, sub:plan.services.join(', '), icon:'users', iconClass:'icon-primary' },
  { label:'Hidden Cost Warnings', value: d.hiddenCostWarnings, sub:`${d.totalFlagged || 12} flagged, ${d.totalConfirmed||3} confirmed`, icon:'eye-off', iconClass:'icon-amber' },
  { label:'Pending Decisions', value: d.pendingDecisions, sub:'Require action this week', icon:'clock', iconClass:'icon-red' },
- { label:'Days Until Event', value: '166', sub:'18 Dec 2026', icon:'calendar', iconClass:'icon-primary' },
+ { label:'Event Date', value: plan.date || 'Not set', sub:`${plan.guests} guests in ${plan.city}`, icon:'calendar', iconClass:'icon-primary' },
  ].map(s => `
  <div class="stat-card">
  <div class="stat-card-icon ${s.iconClass}"><i data-lucide="${s.icon}"></i></div>
@@ -590,19 +766,20 @@ function renderDashboard() {
 
  // Category spend
  const csEl = document.getElementById('category-spend-rows');
- if (csEl) csEl.innerHTML = d.categorySpend.map(c => {
- const pct = c.allocated > 0 ? Math.round(c.committed/c.allocated*100) : 0;
+ if (csEl) csEl.innerHTML = plan.categories.map(c => {
+ const pct = c.allocation > 0 ? Math.round(c.recommended/c.allocation*100) : 0;
+ const color = c.risk === 'High' ? '#EF4444' : c.risk === 'Medium' ? '#F59E0B' : c.risk === 'Locked' ? '#94A3B8' : '#10B981';
  return `
  <div class="flex items-center gap-3 py-3 border-b" style="border-color:var(--border)">
- <div style="width:12px;height:12px;border-radius:3px;background:${c.color};flex-shrink:0"></div>
+ <div style="width:12px;height:12px;border-radius:3px;background:${color};flex-shrink:0"></div>
  <span class="font-semibold text-sm" style="min-width:110px">${c.name}</span>
  <div style="flex:1">
  <div class="progress-wrap">
- <div class="progress-bar" style="width:${pct}%;background:${c.color}"></div>
+ <div class="progress-bar" style="width:${Math.min(100, pct)}%;background:${color}"></div>
  </div>
  </div>
- <span class="text-sm font-bold" style="min-width:90px;text-align:right">${formatINRFull(c.committed)}</span>
- <span class="text-muted text-xs" style="min-width:80px;text-align:right">of ${formatINRFull(c.allocated)}</span>
+ <span class="text-sm font-bold" style="min-width:90px;text-align:right">${formatINRFull(c.recommended)}</span>
+ <span class="text-muted text-xs" style="min-width:80px;text-align:right">target ${formatINRFull(c.allocation)}</span>
  <span class="badge badge-grey text-xs" style="min-width:45px;text-align:center">${pct}%</span>
  </div>
  `;
@@ -632,14 +809,16 @@ function renderBudgetChart() {
  const canvas = document.getElementById('budget-chart');
  if (!canvas) return;
  if (State.chartInstance) { State.chartInstance.destroy(); State.chartInstance = null; }
- const data = EVENTRA.dashboard.categorySpend;
+ const plan = buildBudgetPlan();
+ const data = plan.categories;
+ const colors = data.map(c => c.risk === 'High' ? '#EF4444' : c.risk === 'Medium' ? '#F59E0B' : c.risk === 'Locked' ? '#94A3B8' : '#10B981');
  State.chartInstance = new Chart(canvas, {
  type: 'doughnut',
  data: {
  labels: data.map(d => d.name),
  datasets: [{
- data: data.map(d => d.allocated),
- backgroundColor: data.map(d => d.color),
+ data: data.map(d => d.recommended),
+ backgroundColor: colors,
  borderWidth: 2,
  borderColor: '#fff',
  hoverOffset: 8,
@@ -651,7 +830,7 @@ function renderBudgetChart() {
  legend: { position:'bottom', labels:{ padding:14, font:{ size:12, family:'Inter' } } },
  tooltip: {
  callbacks: {
- label: ctx => ` ${ctx.label}: ${formatINRFull(ctx.parsed)} (${Math.round(ctx.parsed/800000*100)}%)`
+ label: ctx => ` ${ctx.label}: ${formatINRFull(ctx.parsed)} (${Math.round(ctx.parsed/plan.budget*100)}%)`
  }
  }
  }
@@ -771,9 +950,25 @@ function renderRecoveryOptions(totalDelta) {
 
 // """ TRADE-OFF ADVISOR """""""""""""""""""""""""""""""""""""""
 function renderTradeoff() {
+ const plan = buildBudgetPlan();
+ const bannerTitle = document.querySelector('#screen-tradeoff .tradeoff-banner h3');
+ const bannerCopy = document.querySelector('#screen-tradeoff .tradeoff-banner p');
+ if (bannerTitle) {
+ bannerTitle.textContent = plan.gap < 0
+ ? `Your estimated final cost of ${formatINRFull(plan.estimatedMinCost)} exceeds your budget by ${formatINRFull(Math.abs(plan.gap))}`
+ : `Your estimated final cost of ${formatINRFull(plan.estimatedMinCost)} is within your ${formatINRFull(plan.budget)} budget`;
+ }
+ if (bannerCopy) {
+ bannerCopy.textContent = plan.gap < 0
+ ? 'Choose what to protect. Eventra will suggest recovery moves that reduce risk without cutting your top priorities.'
+ : 'Your plan is currently feasible. Use these scenarios only if vendors quote higher than the target amounts.';
+ }
  const el = document.getElementById('tradeoff-scenarios');
  if (!el) return;
  el.innerHTML = EVENTRA.tradeoff.scenarios.map((s, idx) => {
+ const adjustedSaving = Math.max(s.saving, plan.gap < 0 ? Math.ceil(Math.abs(plan.gap) * (0.75 + idx * 0.12)) : Math.round(plan.budget * (0.03 + idx * 0.015)));
+ const adjustedTotal = Math.max(0, plan.estimatedMinCost - adjustedSaving);
+ const isWithinBudget = adjustedTotal <= plan.budget;
  const impactBars = (label, impact) => {
  const levels = { None:5, Low:4, Medium:3, High:1 };
  const filled = levels[impact] || 3;
@@ -791,7 +986,7 @@ function renderTradeoff() {
  </li>
  `).join('');
 
- const withinBadge = s.withinBudget
+ const withinBadge = isWithinBudget
  ? `<span class="badge badge-green" style="font-size:.8rem;padding:5px 12px">OK Exactly within budget</span>`
  : '';
 
@@ -817,13 +1012,13 @@ function renderTradeoff() {
  ` : '';
 
  return `
- <div class="scenario-card ${s.withinBudget ? 'within-budget' : ''}">
+ <div class="scenario-card ${isWithinBudget ? 'within-budget' : ''}">
  <div class="flex justify-between items-start mb-2">
  <h3 class="font-bold">${s.title}</h3>
  <span class="badge ${idx===0?'badge-violet':idx===1?'badge-grey':'badge-green'}">${s.chip}</span>
  </div>
- <div class="scenario-saving">-Rs.${s.saving.toLocaleString('en-IN')}</div>
- <div class="scenario-total">New total: Rs.${s.resultingTotal.toLocaleString('en-IN')} ${withinBadge}</div>
+ <div class="scenario-saving">-${formatINRFull(adjustedSaving)}</div>
+ <div class="scenario-total">New total: ${formatINRFull(adjustedTotal)} ${withinBadge}</div>
  
  <h4 class="font-semibold text-sm mb-2 mt-4">Recommended Changes</h4>
  <ul class="scenario-changes">${changes}</ul>
@@ -906,7 +1101,11 @@ function renderQuestions(cat) {
 
 function copyAllQuestions(cat, vendorName) {
  const questions = EVENTRA.questions[cat] || [];
- const text = `Hi, I'm planning an engagement at Royal Orchid Banquet on 18 Dec 2026 (150 guests). Before we proceed, could you please clarify a few things:\n\n` +
+ const plan = buildBudgetPlan();
+ const eventType = plan.eventType || 'event';
+ const city = plan.city || 'my city';
+ const dateText = plan.date ? ` on ${plan.date}` : '';
+ const text = `Hi, I'm planning a ${eventType} in ${city}${dateText} (${plan.guests} guests). Before we proceed, could you please clarify a few things:\n\n` +
  questions.map((q,i) => `${i+1}. ${q}`).join('\n') +
  `\n\nThank you!`;
  copyToWhatsApp(text, vendorName);
@@ -918,16 +1117,19 @@ function setupNext(step) {
  if (!document.getElementById('f-type').value) { alert('Please select an event type'); return; }
  if (!document.getElementById('f-date').value) { alert('Please select a date'); return; }
  if (!document.getElementById('f-city').value) { alert('Please select a city'); return; }
+ syncFormFromInputs();
  }
  if (step === 2) {
  const g = parseInt(document.getElementById('f-guests').value);
  const b = parseInt(document.getElementById('f-budget').value);
  if (!g || g < 10 || g > 5000) { alert('Guest count must be between 10 and 5,000'); return; }
  if (!b || b < 10000) { alert('Please enter a valid budget (minimum Rs.10,000)'); return; }
+ syncFormFromInputs();
  }
  if (step === 3) {
  const active = document.querySelectorAll('#services-pills .pill.active');
  if (active.length === 0) { alert('Please select at least one service'); return; }
+ syncFormFromInputs();
  }
  document.getElementById(`setup-step-${step}`).classList.add('hidden');
  document.getElementById(`setup-step-${step+1}`).classList.remove('hidden');
@@ -948,6 +1150,7 @@ function setupSubmit() {
  return;
  }
  document.getElementById('priority-error').classList.add('hidden');
+ syncFormFromInputs();
  showToast('Event setup complete! Analysing your budget...');
  setTimeout(() => navigateTo('feasibility'), 1200);
 }

@@ -46,7 +46,7 @@ const EVENTRA = {
  quoteMissing:["GST 18% - Rs.11,700","Travel - est. Rs.4,000-Rs.8,000","Album - est. Rs.8,000-Rs.15,000","Drone - est. Rs.4,000-Rs.6,000"],
  whyRecommended:"Strong portfolio matching Elegant & Minimal style. Base price within photography budget. Most responsive vendor. Final cost manageable without album/drone add-ons.",
  risks:["GST 18% adds Rs.11,700 - confirm if included","No album in base package - family may expect one","Travel to Andheri not confirmed"],
- questions:["Is GST of 18% included in your quoted Rs.65,000?","Is travel to Royal Orchid Banquet, Andheri included or charged separately?","What is the overtime charge per hour if the event runs beyond 8 hours?"],
+ questions:["Is GST of 18% included in your quoted base price?","Is travel to my venue included or charged separately?","What is the overtime charge per hour if the event runs beyond 8 hours?"],
  confidence:"Medium", confidenceColor:"amber",
  scoreBreakdown:{ budgetFit:32, transparency:22, serviceMatch:16, availability:8 }
  },
@@ -62,7 +62,7 @@ const EVENTRA = {
  quoteMissing:["Travel to Andheri venue","Assistant (solo only)","Overtime rate not specified"],
  whyRecommended:"Lower base price with GST and album included. Saves Rs.8,000-Rs.15,000 on album. However, solo photographer for 150-guest event is a significant risk.",
  risks:["Solo photographer for 150-guest event - high risk of missing key moments","Slower response time - availability not confirmed","Travel not included in quote"],
- questions:["Is travel to Royal Orchid Banquet, Andheri included?","Is an assistant available for a 150-guest engagement?","What is your overtime rate beyond 8 hours?"],
+ questions:["Is travel to my venue included?","Is an assistant available for the expected guest count?","What is your overtime rate beyond 8 hours?"],
  confidence:"Low", confidenceColor:"red",
  scoreBreakdown:{ budgetFit:28, transparency:18, serviceMatch:12, availability:7 }
  },
@@ -112,7 +112,7 @@ const EVENTRA = {
  included:["Full veg menu - 4 starters, 2 mains, 3 desserts","Basic crockery and cutlery","Serving staff (8 persons)","Setup and service for 4 hours"],
  excluded:["Vendor meals for photographer/decorator","Water bottles","Extra plates beyond 150","Transport from kitchen","Overtime beyond 4 hours"],
  quoteMissing:["Vendor meals (est. 20 pax) - Rs.6,000-Rs.10,000","Water & beverages - Rs.3,000-Rs.6,000","Transport - Rs.2,000-Rs.4,000","GST 5%"],
- whyRecommended:"Highest Eventra Match Score. Serving staff included, excellent engagement event reviews. Transparent inclusions. Menu matches the selected style.",
+ whyRecommended:"Highest Eventra Match Score. Serving staff included, strong event reviews. Transparent inclusions. Menu matches the selected style.",
  risks:["Vendor meals for photographer and decorator not included - est. Rs.6,000-Rs.10,000","Extra plates at Rs.1,400/head if guest count increases","GST 5% not confirmed in quote"],
  questions:["Are vendor meals for the photographer and decorator team (approx. 15 people) included?","Is transport from your kitchen to the venue included?","Is GST 5% included in the Rs.1,85,000 total?"],
  confidence:"High", confidenceColor:"green",

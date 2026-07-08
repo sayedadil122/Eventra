@@ -4,10 +4,10 @@
     users: [],
     events: [
       {
-        id: "sample-event-riya",
+        id: "sample-event",
         userId: "demo",
-        name: "Riya's Engagement",
-        eventType: "Engagement",
+        name: "Sample Event",
+        eventType: "Wedding",
         eventDate: "2026-12-18",
         city: "Mumbai",
         guestCount: 150,
@@ -22,14 +22,14 @@
       }
     ],
     budgetCategories: [
-      { id: "bc-venue", eventId: "sample-event-riya", name: "Venue", recommended: 240000, percent: 30, risk: "Medium", locked: false },
-      { id: "bc-catering", eventId: "sample-event-riya", name: "Catering", recommended: 200000, percent: 25, risk: "Low", locked: false },
-      { id: "bc-decoration", eventId: "sample-event-riya", name: "Decoration", recommended: 80000, percent: 10, risk: "Low", locked: false },
-      { id: "bc-photo", eventId: "sample-event-riya", name: "Photography", recommended: 80000, percent: 10, risk: "Low", locked: false },
-      { id: "bc-makeup", eventId: "sample-event-riya", name: "Makeup", recommended: 40000, percent: 5, risk: "Low", locked: false },
-      { id: "bc-entertainment", eventId: "sample-event-riya", name: "Entertainment", recommended: 40000, percent: 5, risk: "Medium", locked: false },
-      { id: "bc-logistics", eventId: "sample-event-riya", name: "Logistics", recommended: 40000, percent: 5, risk: "Low", locked: false },
-      { id: "bc-contingency", eventId: "sample-event-riya", name: "Contingency", recommended: 80000, percent: 10, risk: "Locked", locked: true }
+      { id: "bc-venue", eventId: "sample-event", name: "Venue", recommended: 240000, percent: 30, risk: "Medium", locked: false },
+      { id: "bc-catering", eventId: "sample-event", name: "Catering", recommended: 200000, percent: 25, risk: "Low", locked: false },
+      { id: "bc-decoration", eventId: "sample-event", name: "Decoration", recommended: 80000, percent: 10, risk: "Low", locked: false },
+      { id: "bc-photo", eventId: "sample-event", name: "Photography", recommended: 80000, percent: 10, risk: "Low", locked: false },
+      { id: "bc-makeup", eventId: "sample-event", name: "Makeup", recommended: 40000, percent: 5, risk: "Low", locked: false },
+      { id: "bc-entertainment", eventId: "sample-event", name: "Entertainment", recommended: 40000, percent: 5, risk: "Medium", locked: false },
+      { id: "bc-logistics", eventId: "sample-event", name: "Logistics", recommended: 40000, percent: 5, risk: "Low", locked: false },
+      { id: "bc-contingency", eventId: "sample-event", name: "Contingency", recommended: 80000, percent: 10, risk: "Locked", locked: true }
     ],
     vendors: [
       vendor("p1", "Pixel Stories", "Photography", "Bandra, Mumbai", 65000, 65000, 82000, 104000, 78, "Best Value", true, "< 24 hrs", ["Full-day coverage", "1 photographer + 1 assistant", "Digital delivery"], ["GST 18%", "Travel", "Printed album", "Drone coverage"], "Medium"),
@@ -42,9 +42,9 @@
     quotes: [],
     hiddenCosts: hiddenCosts(),
     payments: [
-      { id: "pay-1", eventId: "sample-event-riya", vendorId: "v1", vendorName: "Royal Orchid Banquet", amount: 50000, type: "Advance", dueDate: "2026-08-15", status: "pending", createdAt: now, updatedAt: now },
-      { id: "pay-2", eventId: "sample-event-riya", vendorId: "c1", vendorName: "FeastCraft Catering", amount: 45000, type: "Advance", dueDate: "2026-09-01", status: "pending", createdAt: now, updatedAt: now },
-      { id: "pay-3", eventId: "sample-event-riya", vendorId: "p1", vendorName: "Pixel Stories", amount: 32500, type: "Advance", dueDate: "2026-09-15", status: "pending", createdAt: now, updatedAt: now }
+      { id: "pay-1", eventId: "sample-event", vendorId: "v1", vendorName: "Royal Orchid Banquet", amount: 50000, type: "Advance", dueDate: "2026-08-15", status: "pending", createdAt: now, updatedAt: now },
+      { id: "pay-2", eventId: "sample-event", vendorId: "c1", vendorName: "FeastCraft Catering", amount: 45000, type: "Advance", dueDate: "2026-09-01", status: "pending", createdAt: now, updatedAt: now },
+      { id: "pay-3", eventId: "sample-event", vendorId: "p1", vendorName: "Pixel Stories", amount: 32500, type: "Advance", dueDate: "2026-09-15", status: "pending", createdAt: now, updatedAt: now }
     ],
     questionBank: questions()
   };
@@ -88,7 +88,7 @@ function hiddenCosts() {
     ["Decoration", "Teardown", "5000-8000", "Medium", "unconfirmed"],
     ["Decoration", "Transport", "3000-5000", "Low", "unconfirmed"]
   ];
-  return rows.map(([category, name, amountRange, risk, status], index) => ({ id: `hc-${index + 1}`, eventId: "sample-event-riya", category, name, amountRange, risk, status }));
+  return rows.map(([category, name, amountRange, risk, status], index) => ({ id: `hc-${index + 1}`, eventId: "sample-event", category, name, amountRange, risk, status }));
 }
 
 function questions() {
