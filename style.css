@@ -1,6 +1,6 @@
 /* ================================================================
-   Eventra — style.css
-   Design System · All Components · All Screens
+   Eventra  style.css
+   Design System  All Components  All Screens
    ================================================================ */
 
 /* === 1. VARIABLES ============================================== */
@@ -366,7 +366,7 @@ tr:hover td{background:rgba(0,0,0,0.015)}
 .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px}
 .hero-trust{display:flex;gap:20px;flex-wrap:wrap}
 .hero-trust span{font-size:.8rem;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:5px}
-.hero-trust span::before{content:'✓';color:var(--green);font-weight:700}
+.hero-trust span::before{content:'';color:var(--green);font-weight:700}
 
 /* === 20. PAIN POINTS GRID (Landing) ========================= */
 .pain-grid{
@@ -603,7 +603,7 @@ tr:hover td{background:rgba(0,0,0,0.015)}
   transition:all .3s ease;pointer-events:none;
 }
 .toast.show{transform:none;opacity:1}
-.toast.success::before{content:'✓';color:var(--green)}
+.toast.success::before{content:'';color:var(--green)}
 
 /* === 32. MOBILE / RESPONSIVE ================================ */
 .bottom-nav{display:none}
