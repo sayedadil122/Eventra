@@ -18,8 +18,13 @@ const State = {
  activeVendorTab: 'photography',
  activeQTab: 'Photography',
  simulated: false,
- chartInstance: null,
+  chartInstance: null,
+  directoryMap: null,
+  directoryMarkers: [],
 };
+
+const GOOGLE_MAPS_API_KEY = "AIzaSyAeH4B-1ijzaWSWSq7geOVHbIidjnWGkzw";
+let googleMapsLoader = null;
 
 function navigateTo(route) {
  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -139,6 +144,7 @@ function renderDirectory(filterType = currentDirectoryTab) {
  if (!el) return;
  const vendors = EVENTRA.vendorProfiles.filter(v => filterType === 'all' || v.type === filterType);
  if (!vendors.length) { el.innerHTML = emptyState('No vendors found for this category.'); return; }
+ renderDirectoryMap(vendors);
 
  const iconByType = {
  Hotel: 'hotel',
@@ -188,6 +194,79 @@ function renderDirectory(filterType = currentDirectoryTab) {
  `;
  }).join('');
  lucide.createIcons();
+}
+
+function loadGoogleMaps() {
+ if (window.google && window.google.maps) return Promise.resolve(window.google.maps);
+ if (googleMapsLoader) return googleMapsLoader;
+ googleMapsLoader = new Promise((resolve, reject) => {
+ const script = document.createElement('script');
+ script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
+ script.async = true;
+ script.defer = true;
+ script.onload = () => resolve(window.google.maps);
+ script.onerror = () => reject(new Error('Google Maps failed to load'));
+ document.head.appendChild(script);
+ });
+ return googleMapsLoader;
+}
+
+function renderDirectoryMap(vendors) {
+ const mapEl = document.getElementById('directory-map');
+ if (!mapEl) return;
+ const mappedVendors = vendors.filter(v => Number.isFinite(v.lat) && Number.isFinite(v.lng));
+ if (!mappedVendors.length) {
+ mapEl.innerHTML = '<div class="map-fallback">Location data is not available for this filter.</div>';
+ return;
+ }
+
+ loadGoogleMaps()
+ .then(() => {
+ const center = mappedVendors[0];
+ if (!State.directoryMap) {
+ State.directoryMap = new google.maps.Map(mapEl, {
+ center: { lat: center.lat, lng: center.lng },
+ zoom: mappedVendors.length === 1 ? 13 : 10,
+ mapTypeControl: false,
+ streetViewControl: false,
+ fullscreenControl: false,
+ gestureHandling: 'cooperative',
+ styles: [
+ { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+ { featureType: 'transit', stylers: [{ visibility: 'off' }] }
+ ]
+ });
+ }
+
+ State.directoryMarkers.forEach(marker => marker.setMap(null));
+ State.directoryMarkers = [];
+
+ const bounds = new google.maps.LatLngBounds();
+ mappedVendors.forEach(vendor => {
+ const position = { lat: vendor.lat, lng: vendor.lng };
+ bounds.extend(position);
+ const marker = new google.maps.Marker({
+ position,
+ map: State.directoryMap,
+ title: vendor.name
+ });
+ const info = new google.maps.InfoWindow({
+ content: `<strong>${vendor.name}</strong><br>${vendor.location}<br>${vendor.type}`
+ });
+ marker.addListener('click', () => info.open(State.directoryMap, marker));
+ State.directoryMarkers.push(marker);
+ });
+
+ if (mappedVendors.length > 1) {
+ State.directoryMap.fitBounds(bounds, 36);
+ } else {
+ State.directoryMap.setCenter({ lat: center.lat, lng: center.lng });
+ State.directoryMap.setZoom(13);
+ }
+ })
+ .catch(() => {
+ mapEl.innerHTML = `<div class="map-fallback">Map could not load. Vendor locations: ${mappedVendors.map(v => v.location).join(', ')}.</div>`;
+ });
 }
 //  FEASIBILITY """"""""""""""""""""""""""""""""""""""""""""
 function renderFeasibility() {

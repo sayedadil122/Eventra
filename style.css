@@ -810,6 +810,11 @@ button,input,select,textarea{font-family:var(--font)}
 .vendor-price-caption{font-size:13px;font-weight:700;color:var(--grey);margin-top:4px}
 .vendor-risk{font-size:13px;font-weight:700;color:var(--warn);display:flex;gap:7px;align-items:flex-start;line-height:1.35}
 .vendor-risk svg{width:15px;height:15px;flex-shrink:0;margin-top:1px}
+.directory-map-panel{display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:22px;align-items:stretch;margin-bottom:26px;padding:20px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm)}
+.directory-map-copy h2{font-size:21px;font-weight:900;margin-bottom:8px;color:var(--ink)}
+.directory-map-copy p{font-size:14px;font-weight:600;line-height:1.55;color:var(--grey)}
+.directory-map{min-height:280px;border-radius:16px;overflow:hidden;background:var(--soft);border:1px solid var(--line)}
+.map-fallback{height:100%;min-height:280px;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--grey);font-size:14px;font-weight:700}
 
 .card{border-color:var(--line);box-shadow:var(--shadow-sm);border-radius:18px}
 .pill.active{background:var(--ink);border-color:var(--ink);color:#fff}
@@ -828,6 +833,8 @@ button,input,select,textarea{font-family:var(--font)}
   .page-header,.page-body,.section,.how-band,.hero{padding-left:22px;padding-right:22px}
   .hero{padding-top:34px}
   .event-type-grid,.steps-row,#directory-content.grid-3{grid-template-columns:1fr}
+  .directory-map-panel{grid-template-columns:1fr;padding:16px}
+  .directory-map{min-height:240px}
   .setup-shell .card{padding:26px 20px}
   .step-unit{min-width:56px;font-size:11px}
   .step-line{min-width:16px}

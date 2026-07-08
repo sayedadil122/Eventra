@@ -36,13 +36,6 @@
  <li><a href="#dashboard" class="nav-item" data-route="dashboard"><i data-lucide="line-chart"></i><span>Dashboard</span></a></li>
  <li class="nav-questions"><a href="#questions" class="nav-item" data-route="questions"><i data-lucide="help-circle"></i><span>Questions</span></a></li>
  </ul>
- <div class="sidebar-event sidebar-demo">
- <div class="sidebar-event-avatar"><i data-lucide="play-circle"></i></div>
- <div>
- <div class="sidebar-event-name">Try demo sample</div>
- <div class="sidebar-event-meta">No login required</div>
- </div>
- </div>
 </nav>
 
 <!-- -------------------- MAIN -------------------- -->
@@ -672,6 +665,15 @@
  <p>Every total is all-in for your event: 150 guests, GST and known extras included.</p>
  </div>
  <div class="page-body">
+ <div class="directory-map-panel">
+ <div class="directory-map-copy">
+ <h2>Vendor map</h2>
+ <p>See where shortlisted vendors are located before comparing travel, logistics, and hidden charges.</p>
+ </div>
+ <div id="directory-map" class="directory-map" aria-label="Vendor locations map">
+ <div class="map-fallback">Loading vendor map...</div>
+ </div>
+ </div>
  <div class="tab-bar" id="directory-tabs">
  <div class="tab active" onclick="selectDirectoryTab('all', this)">All</div>
  <div class="tab" onclick="selectDirectoryTab('Hotel', this)">Venues</div>
