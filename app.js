@@ -1,9 +1,9 @@
-// app.js — Eventra Application Logic
-// Router · All screen renderers · All interactivity
+﻿// app.js â€” Eventra Application Logic
+// Router Â· All screen renderers Â· All interactivity
 
 'use strict';
 
-// ─── State ──────────────────────────────────────────────────
+// â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const State = {
   currentRoute: 'home',
   setupStep: 1,
@@ -69,7 +69,7 @@ window.addEventListener('hashchange', () => {
   navigateTo(hash);
 });
 
-// ─── HOME / LANDING ─────────────────────────────────────────
+// â”€â”€â”€ HOME / LANDING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderHome() {
   // Testimonials
   const tg = document.getElementById('testimonials-grid');
@@ -87,7 +87,7 @@ function renderHome() {
   `).join('');
 }
 
-// ─── DISCOVERY ──────────────────────────────────────────────
+// â”€â”€â”€ DISCOVERY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderDiscovery() {
   const grid = document.getElementById('pp-grid');
   if (!grid) return;
@@ -95,7 +95,7 @@ function renderDiscovery() {
     <div class="pp-card pp-${pp.priority}">
       <div class="pp-card-icon"><i data-lucide="${pp.icon}"></i></div>
       <div style="min-width:0">
-        <div class="pp-card-id">${pp.id} · ${priorityLabel(pp.priority)}</div>
+        <div class="pp-card-id">${pp.id} Â· ${priorityLabel(pp.priority)}</div>
         <div class="pp-card-title">${pp.title}</div>
         <div class="pp-card-desc">${pp.description}</div>
       </div>
@@ -124,7 +124,7 @@ function priorityLabel(p) {
   return { must:'Must Solve', should:'Should Solve', supporting:'Supporting', future:'Future V2', emotional:'Emotional Driver' }[p] || p;
 }
 
-// ─── VENDOR DIRECTORY ───────────────────────────────────────
+// â”€â”€â”€ VENDOR DIRECTORY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let currentDirectoryTab = 'all';
 
 function selectDirectoryTab(type, el) {
@@ -139,62 +139,57 @@ function renderDirectory(filterType = currentDirectoryTab) {
   if (!el) return;
   const vendors = EVENTRA.vendorProfiles.filter(v => filterType === 'all' || v.type === filterType);
   if (!vendors.length) { el.innerHTML = emptyState('No vendors found for this category.'); return; }
-  
-  el.innerHTML = vendors.map(v => {
-    // True Cost Calculation Logic
+
+  const iconByType = {
+    Hotel: 'hotel',
+    Farmhouse: 'trees',
+    Photographer: 'camera',
+    Decorator: 'flower-2'
+  };
+  const gradientTiles = ['tile-peach', 'tile-blue', 'tile-pink', 'tile-green', 'tile-violet', 'tile-amber'];
+  const hiddenWarningByType = {
+    Hotel: '+10% service charge not shown on listing',
+    Farmhouse: 'Generator, security and cleanup billed separately',
+    Photographer: 'Album and travel billed separately',
+    Decorator: 'Teardown and floral wastage charged extra'
+  };
+
+  el.innerHTML = vendors.map((v, index) => {
     const baseCost = v.startingPrice * (v.priceUnit === 'per plate' ? 150 : 1);
     const gst = baseCost * 0.18;
-    const hiddenCost = v.type === 'Farmhouse' ? 45000 : (v.type === 'Hotel' ? baseCost * 0.10 : 0); // 45k for Gen/Sec, 10% service charge for hotels
+    const hiddenCost = v.type === 'Farmhouse' ? 45000 : (v.type === 'Hotel' ? baseCost * 0.10 : 0);
     const trueCost = baseCost + gst + hiddenCost;
-    const hiddenWarning = v.type === 'Farmhouse' ? 'Requires generator & security rental' : (v.type === 'Hotel' ? '10% Mandatory Service Charge' : '18% GST added at billing');
+    const icon = iconByType[v.type] || 'store';
+    const tile = gradientTiles[index % gradientTiles.length];
+    const locationLine = v.type === 'Photographer' || v.type === 'Decorator'
+      ? `${v.type === 'Decorator' ? 'Decor' : v.type} · ${v.location}`
+      : v.location;
+    const hiddenWarning = hiddenWarningByType[v.type] || 'GST and event add-ons added at billing';
 
     return `
-    <div class="card card-hover" style="display:flex;flex-direction:column;gap:12px;border-color:var(--primary-lt)">
-      <div class="flex justify-between items-start">
-        <div class="flex items-center gap-3">
-          <span style="font-size:2rem;background:var(--surface-2);width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center">${v.image}</span>
-          <div>
-            <h3 class="font-bold text-lg">${v.name}</h3>
-            <span class="text-xs text-muted flex items-center gap-1"><i data-lucide="map-pin" style="width:12px"></i> ${v.location}</span>
-          </div>
+    <button class="vendor-card card-hover" onclick="navigateTo('quotes')">
+      <div class="vendor-card-top">
+        <span class="vendor-logo-tile ${tile}"><i data-lucide="${icon}"></i></span>
+        <div class="vendor-title-block">
+          <h3>${v.name}</h3>
+          <div class="vendor-location"><i data-lucide="map-pin"></i> ${locationLine}</div>
         </div>
-        <div class="badge badge-green flex items-center gap-1"><i data-lucide="star" style="width:12px"></i> ${v.rating}</div>
+        <div class="vendor-rating">★ ${v.rating}</div>
       </div>
-      
-      <p class="text-sm text-secondary" style="line-height:1.5">${v.description}</p>
-      
-      <div class="flex flex-wrap gap-2">
-        ${v.tags.map(t => `<span class="badge badge-grey">${t}</span>`).join('')}
-      </div>
-
-      <!-- Eventra True Cost Module -->
-      <div style="background:var(--amber-lt); border: 1px solid rgba(245,158,11,.3); border-radius:var(--radius); padding:14px; margin-top:auto">
-        <div class="flex justify-between items-start mb-2">
-          <div>
-            <div class="text-xs font-bold" style="color:#92400E;text-transform:uppercase;letter-spacing:0.04em">True Cost Estimate</div>
-            <div class="text-xs" style="color:#92400E;opacity:0.8">Based on 150 guests</div>
-          </div>
-          <div class="font-bold text-lg" style="color:#92400E">₹${trueCost.toLocaleString('en-IN')}</div>
-        </div>
-        <div class="text-xs" style="color:#92400E; opacity:0.8; padding-top:8px; border-top:1px solid rgba(245,158,11,.2)">
-           Includes listed price + 18% GST
-        </div>
-        <div class="text-xs font-semibold mt-1" style="color:var(--red); display:flex; align-items:center; gap:4px">
-           <i data-lucide="alert-triangle" style="width:12px"></i> Hidden Risk: ${hiddenWarning}
+      <p class="vendor-description">${v.description}</p>
+      <div class="vendor-price-row">
+        <div>
+          <div class="vendor-price">${formatINRFull(Math.round(trueCost))}</div>
+          <div class="vendor-price-caption">all-in for 150 guests</div>
         </div>
       </div>
-      
-      <div class="flex justify-between items-center mt-2">
-        <div class="text-xs text-muted" style="text-decoration:line-through">Platform Listed: ₹${v.startingPrice.toLocaleString('en-IN')} ${v.priceUnit}</div>
-        <button class="btn btn-primary btn-sm" onclick="navigateTo('quotes')">Upload Quote</button>
-      </div>
-    </div>
-    `
+      <div class="vendor-risk"><i data-lucide="triangle-alert"></i> ${hiddenWarning}</div>
+    </button>
+    `;
   }).join('');
   lucide.createIcons();
 }
-
-// ─── FEASIBILITY ────────────────────────────────────────────
+// ─── FEASIBILITY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderFeasibility() {
   const cats = EVENTRA.feasibility.categories;
   const catEl = document.getElementById('feas-categories');
@@ -202,7 +197,7 @@ function renderFeasibility() {
   catEl.innerHTML = cats.map(c => {
     const pct = c.percent;
     const riskBadge = c.risk === 'Locked'
-      ? `<span class="badge badge-grey">🔒 Locked</span>`
+      ? `<span class="badge badge-grey">ðŸ”’ Locked</span>`
       : c.risk === 'Low'
       ? `<span class="badge badge-green">Low Risk</span>`
       : `<span class="badge badge-amber">Medium Risk</span>`;
@@ -225,10 +220,10 @@ function renderFeasibility() {
   const bm = document.getElementById('feas-benchmarks');
   if (bm) {
     const ranges = [
-      { name:'Venue (150 pax)', range:'₹1,80,000–₹3,20,000', budget:'₹2,40,000' },
-      { name:'Catering /plate', range:'₹1,000–₹1,800', budget:'₹1,333' },
-      { name:'Photography',     range:'₹55,000–₹1,20,000', budget:'₹80,000' },
-      { name:'Decoration',      range:'₹60,000–₹1,50,000', budget:'₹80,000' },
+      { name:'Venue (150 pax)', range:'â‚¹1,80,000â€“â‚¹3,20,000', budget:'â‚¹2,40,000' },
+      { name:'Catering /plate', range:'â‚¹1,000â€“â‚¹1,800', budget:'â‚¹1,333' },
+      { name:'Photography',     range:'â‚¹55,000â€“â‚¹1,20,000', budget:'â‚¹80,000' },
+      { name:'Decoration',      range:'â‚¹60,000â€“â‚¹1,50,000', budget:'â‚¹80,000' },
     ];
     bm.innerHTML = ranges.map(r => `
       <div class="flex justify-between items-center py-1 border-b" style="border-color:var(--border)">
@@ -242,7 +237,7 @@ function renderFeasibility() {
   }
 }
 
-// ─── QUOTE ANALYSIS ─────────────────────────────────────────
+// â”€â”€â”€ QUOTE ANALYSIS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function selectQuoteTab(cat, el) {
   State.activeQuoteTab = cat;
   document.querySelectorAll('#quote-tabs .tab').forEach(t => t.classList.remove('active'));
@@ -260,8 +255,8 @@ function renderQuotes(cat) {
 }
 
 function renderQuoteCard(v) {
-  const included = v.included.map(i => `<div class="flex items-center gap-2 text-sm py-1"><span style="color:var(--green);font-size:1rem">✓</span>${i}</div>`).join('');
-  const missing = v.excluded.map(i => `<div class="flex items-center gap-2 text-sm py-1"><span style="color:var(--amber);font-size:1rem">⚠</span>${i}</div>`).join('');
+  const included = v.included.map(i => `<div class="flex items-center gap-2 text-sm py-1"><span style="color:var(--green);font-size:1rem">âœ“</span>${i}</div>`).join('');
+  const missing = v.excluded.map(i => `<div class="flex items-center gap-2 text-sm py-1"><span style="color:var(--amber);font-size:1rem">âš </span>${i}</div>`).join('');
   const confColor = { High:'green', Medium:'amber', Low:'red' }[v.confidence] || 'grey';
   return `
     <div class="card mb-4">
@@ -293,26 +288,26 @@ function renderQuoteCard(v) {
         </div>
         <div class="card" style="text-align:center;background:var(--amber-lt);border-color:rgba(245,158,11,.2)">
           <div class="text-xs font-semibold mb-1" style="color:#92400E">Est. Final Cost</div>
-          <div style="font-size:1.1rem;font-weight:800;color:#92400E">${formatINRFull(v.estimatedFinalMin)}–${formatINRFull(v.estimatedFinalMax)}</div>
+          <div style="font-size:1.1rem;font-weight:800;color:#92400E">${formatINRFull(v.estimatedFinalMin)}â€“${formatINRFull(v.estimatedFinalMax)}</div>
         </div>
       </div>
 
       <!-- Included vs Missing -->
       <div class="grid-2 gap-4 mb-4">
         <div>
-          <div class="font-semibold text-sm mb-2" style="color:var(--green)">✓ Included in Quote</div>
+          <div class="font-semibold text-sm mb-2" style="color:var(--green)">âœ“ Included in Quote</div>
           ${included}
         </div>
         <div>
-          <div class="font-semibold text-sm mb-2" style="color:var(--amber)">⚠ Likely Missing</div>
+          <div class="font-semibold text-sm mb-2" style="color:var(--amber)">âš  Likely Missing</div>
           ${missing}
-          <div class="mt-2 text-sm" style="color:var(--red);font-weight:600">Hidden estimate: ${v.hiddenEstimate || (formatINRFull(v.estimatedFinalMin - v.quotedPrice) + '–' + formatINRFull(v.estimatedFinalMax - v.quotedPrice))}</div>
+          <div class="mt-2 text-sm" style="color:var(--red);font-weight:600">Hidden estimate: ${v.hiddenEstimate || (formatINRFull(v.estimatedFinalMin - v.quotedPrice) + 'â€“' + formatINRFull(v.estimatedFinalMax - v.quotedPrice))}</div>
         </div>
       </div>
 
       <!-- AI Review -->
       <div class="ai-box mb-4">
-        <div class="ai-box-icon">⚠️</div>
+        <div class="ai-box-icon">âš ï¸</div>
         <div>
           <div class="ai-box-label">Biggest Risk</div>
           <div class="ai-box-text">${v.risks[0]}</div>
@@ -322,16 +317,16 @@ function renderQuoteCard(v) {
       <!-- Benchmark -->
       <div style="background:var(--surface-2);border-radius:var(--radius);padding:12px 14px;font-size:.82rem;margin-bottom:16px">
         <span class="text-secondary">Market range for ${v.category} in Mumbai: </span>
-        <span class="font-semibold">₹55,000–₹1,20,000</span>
+        <span class="font-semibold">â‚¹55,000â€“â‚¹1,20,000</span>
         <span class="badge badge-green ml-auto" style="float:right">Within market range</span>
       </div>
 
-      <button class="btn btn-primary btn-sm" onclick="navigateTo('vendors')">Add to Comparison →</button>
+      <button class="btn btn-primary btn-sm" onclick="navigateTo('vendors')">Add to Comparison â†’</button>
     </div>
   `;
 }
 
-// ─── VENDOR COMPARISON ──────────────────────────────────────
+// â”€â”€â”€ VENDOR COMPARISON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function selectVendorTab(cat, el) {
   State.activeVendorTab = cat;
   document.querySelectorAll('#vendor-tabs .tab').forEach(t => t.classList.remove('active'));
@@ -394,12 +389,12 @@ function renderVendorSingle(v) {
       </div>
       <div style="background:var(--amber-lt);padding:12px;border-radius:var(--radius);text-align:center">
         <div class="text-xs font-semibold" style="color:#92400E">Est. Final</div>
-        <div class="font-bold" style="color:#92400E;font-size:.9rem">${formatINRFull(v.estimatedFinalMin)}–${formatINRFull(v.estimatedFinalMax)}</div>
+        <div class="font-bold" style="color:#92400E;font-size:.9rem">${formatINRFull(v.estimatedFinalMin)}â€“${formatINRFull(v.estimatedFinalMax)}</div>
       </div>
     </div>
     <div class="badge badge-${v.badgeColor === 'violet' ? 'violet' : v.badgeColor === 'green' ? 'green' : v.badgeColor === 'red' ? 'red' : 'amber'} mb-3">${v.badge}</div>
     <div class="ai-box mb-3">
-      <div class="ai-box-icon">💡</div>
+      <div class="ai-box-icon">ðŸ’¡</div>
       <div><div class="ai-box-label">Why Recommended</div><div class="ai-box-text">${v.whyRecommended}</div></div>
     </div>
     ${renderQuestionBlock(v)}
@@ -409,15 +404,15 @@ function renderVendorSingle(v) {
 function renderComparisonTable(vendors) {
   const scoreClass = s => s >= 75 ? 'score-green' : s >= 60 ? 'score-amber' : 'score-red';
   const badgeClass = b => ({ green:'badge-green', amber:'badge-amber', red:'badge-red', violet:'badge-violet' }[b] || 'badge-grey');
-  const avail = v => v.availability ? `<span class="badge badge-green">✓ Available</span>` : `<span class="badge badge-red">✗ Unconfirmed</span>`;
-  const bool = v => v ? `<span style="color:var(--green)">✓</span>` : `<span style="color:var(--red)">✗</span>`;
+  const avail = v => v.availability ? `<span class="badge badge-green">âœ“ Available</span>` : `<span class="badge badge-red">âœ— Unconfirmed</span>`;
+  const bool = v => v ? `<span style="color:var(--green)">âœ“</span>` : `<span style="color:var(--red)">âœ—</span>`;
 
   const rows = [
     { label:'Match Score',     render: v => `<div class="match-score-circle ${scoreClass(v.matchScore)}" style="margin:0 auto">${v.matchScore}</div>` },
     { label:'Badge',           render: v => `<span class="badge ${badgeClass(v.badgeColor)}">${v.badge}</span>` },
     { label:'Listed Price',    render: v => `<span style="text-decoration:line-through;color:var(--text-3)">${formatINRFull(v.listedPrice)}</span>` },
     { label:'Quoted Price',    render: v => `<b>${formatINRFull(v.quotedPrice)}</b>` },
-    { label:'Est. Final Cost', render: v => `<b style="color:var(--amber)">${formatINRFull(v.estimatedFinalMin)}–${formatINRFull(v.estimatedFinalMax)}</b>` },
+    { label:'Est. Final Cost', render: v => `<b style="color:var(--amber)">${formatINRFull(v.estimatedFinalMin)}â€“${formatINRFull(v.estimatedFinalMax)}</b>` },
     { label:'Availability',    render: v => avail(v) },
     { label:'Response Time',   render: v => `<span class="text-sm">${v.responseTime}</span>` },
     { label:'GST Included',    render: v => bool(v.included.some(i => i.toLowerCase().includes('gst'))) },
@@ -447,8 +442,8 @@ function renderComparisonTable(vendors) {
         <div class="accordion-header-left">
           <span style="font-size:1.1rem">${v.image}</span>
           <div>
-            <div class="accordion-title">${v.name} — Details</div>
-            <div class="accordion-meta">Why recommended · Risks · Questions to ask</div>
+            <div class="accordion-title">${v.name} â€” Details</div>
+            <div class="accordion-meta">Why recommended Â· Risks Â· Questions to ask</div>
           </div>
         </div>
         <i data-lucide="chevron-down" class="accordion-chevron"></i>
@@ -456,12 +451,12 @@ function renderComparisonTable(vendors) {
       <div class="accordion-body" style="padding:20px">
         <div class="grid-2 gap-4 mb-4">
           <div>
-            <div class="font-semibold text-sm mb-2" style="color:var(--green)">💡 Why Recommended</div>
+            <div class="font-semibold text-sm mb-2" style="color:var(--green)">ðŸ’¡ Why Recommended</div>
             <p class="text-sm text-secondary">${v.whyRecommended}</p>
           </div>
           <div>
-            <div class="font-semibold text-sm mb-2" style="color:var(--red)">⚠ Possible Risks</div>
-            <ul style="list-style:none;padding:0">${v.risks.map(r => `<li class="text-sm text-secondary py-1">• ${r}</li>`).join('')}</ul>
+            <div class="font-semibold text-sm mb-2" style="color:var(--red)">âš  Possible Risks</div>
+            <ul style="list-style:none;padding:0">${v.risks.map(r => `<li class="text-sm text-secondary py-1">â€¢ ${r}</li>`).join('')}</ul>
           </div>
         </div>
         ${renderQuestionBlock(v)}
@@ -484,7 +479,7 @@ function renderComparisonTable(vendors) {
 function renderQuestionBlock(v) {
   return `
     <div style="background:var(--surface-2);border-radius:var(--radius);padding:16px">
-      <div class="font-semibold text-sm mb-3">❓ Questions to Ask Before Booking</div>
+      <div class="font-semibold text-sm mb-3">â“ Questions to Ask Before Booking</div>
       <ul class="q-list">
         ${v.questions.map((q,i) => `
           <li class="q-item">
@@ -500,7 +495,7 @@ function renderQuestionBlock(v) {
   `;
 }
 
-// ─── HIDDEN COSTS ────────────────────────────────────────────
+// â”€â”€â”€ HIDDEN COSTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderHiddenCosts() {
   const el = document.getElementById('hc-accordions');
   if (!el) return;
@@ -512,10 +507,10 @@ function renderHiddenCosts() {
         ? `<span class="badge badge-amber">Medium Risk</span>`
         : `<span class="badge badge-grey">Low Risk</span>`;
       const statusIcon = item.status === 'confirmed'
-        ? `<span style="color:var(--green);font-size:1.1rem">✓</span>`
+        ? `<span style="color:var(--green);font-size:1.1rem">âœ“</span>`
         : item.status === 'not-applicable'
         ? `<span class="text-muted text-xs">N/A</span>`
-        : `<span style="color:var(--amber);font-size:1.1rem">⚠</span>`;
+        : `<span style="color:var(--amber);font-size:1.1rem">âš </span>`;
       const rowStyle = item.status === 'confirmed' ? 'background:rgba(16,185,129,0.04)' : '';
       return `
         <div class="hc-row" style="${rowStyle}">
@@ -540,7 +535,7 @@ function renderHiddenCosts() {
             </div>
             <div>
               <div class="accordion-title">${cat.name}</div>
-              <div class="accordion-meta">${cat.riskCount} potential risks · ₹${cat.rangeMin.toLocaleString('en-IN')}–₹${cat.rangeMax.toLocaleString('en-IN')}</div>
+              <div class="accordion-meta">${cat.riskCount} potential risks Â· â‚¹${cat.rangeMin.toLocaleString('en-IN')}â€“â‚¹${cat.rangeMax.toLocaleString('en-IN')}</div>
             </div>
           </div>
           <i data-lucide="chevron-down" class="accordion-chevron"></i>
@@ -551,7 +546,7 @@ function renderHiddenCosts() {
   }).join('');
 }
 
-// ─── DASHBOARD ───────────────────────────────────────────────
+// â”€â”€â”€ DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderDashboard() {
   const d = EVENTRA.dashboard;
 
@@ -560,8 +555,8 @@ function renderDashboard() {
   if (statsEl) statsEl.innerHTML = [
     { label:'Total Budget', value: formatINRFull(d.totalBudget), sub:'Your ceiling', icon:'wallet', iconClass:'icon-primary' },
     { label:'Committed So Far', value: formatINRFull(d.committed), sub:`${Math.round(d.committed/d.totalBudget*100)}% of budget`, icon:'check-circle', iconClass:'icon-green' },
-    { label:'Est. Final Cost', value: formatINRFull(d.estimatedFinal), sub:'₹65,000 over budget', icon:'trending-up', iconClass:'icon-red', valueColor:'var(--red)' },
-    { label:'Contingency', value: formatINRFull(d.contingency), sub:'10% reserve — untouched', icon:'shield', iconClass:'icon-amber' },
+    { label:'Est. Final Cost', value: formatINRFull(d.estimatedFinal), sub:'â‚¹65,000 over budget', icon:'trending-up', iconClass:'icon-red', valueColor:'var(--red)' },
+    { label:'Contingency', value: formatINRFull(d.contingency), sub:'10% reserve â€” untouched', icon:'shield', iconClass:'icon-amber' },
     { label:'Vendors Selected', value: d.vendorsSelected + ' of ' + d.form?.services?.length || '5', sub:'3 pending decision', icon:'users', iconClass:'icon-primary' },
     { label:'Hidden Cost Warnings', value: d.hiddenCostWarnings, sub:`${d.totalFlagged || 12} flagged, ${d.totalConfirmed||3} confirmed`, icon:'eye-off', iconClass:'icon-amber' },
     { label:'Pending Decisions', value: d.pendingDecisions, sub:'Require action this week', icon:'clock', iconClass:'icon-red' },
@@ -617,7 +612,7 @@ function renderDashboard() {
   const pEl = document.getElementById('payment-tbody');
   if (pEl) pEl.innerHTML = d.payments.map(p => {
     const statusClass = p.status === 'pending' ? 'payment-status-pending' : p.status === 'future' ? 'payment-status-future' : 'payment-status-paid';
-    const statusLabel = p.status === 'pending' ? '⚡ Due Soon' : p.status === 'future' ? 'Upcoming' : '✓ Paid';
+    const statusLabel = p.status === 'pending' ? 'âš¡ Due Soon' : p.status === 'future' ? 'Upcoming' : 'âœ“ Paid';
     return `
       <tr>
         <td class="font-medium">${p.vendor}</td>
@@ -664,7 +659,7 @@ function renderBudgetChart() {
   });
 }
 
-// ─── SIMULATOR ──────────────────────────────────────────────
+// â”€â”€â”€ SIMULATOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderSimulator() {
   // Already static in HTML, just ensure lucide icons
 }
@@ -676,10 +671,10 @@ function updateSimulatorInput() {
   if (!label || !input) return;
   const map = {
     'guests':       { label:'New Guest Count',        val:180 },
-    'budget':       { label:'New Total Budget (₹)',    val:750000 },
+    'budget':       { label:'New Total Budget (â‚¹)',    val:750000 },
     'function':     { label:'Number of Functions',     val:2 },
-    'vendor-price': { label:'New Vendor Price (₹)',    val:90000 },
-    'upgrade':      { label:'Upgrade Amount (₹)',      val:25000 },
+    'vendor-price': { label:'New Vendor Price (â‚¹)',    val:90000 },
+    'upgrade':      { label:'Upgrade Amount (â‚¹)',      val:25000 },
   };
   const m = map[type] || map['guests'];
   label.textContent = m.label;
@@ -703,7 +698,7 @@ function runSimulation() {
 
   // Use built-in guest impact data for guest type
   if (type === 'guests') {
-    titleEl.textContent = `Impact of Adding ${value - 150} Guests (150 → ${value})`;
+    titleEl.textContent = `Impact of Adding ${value - 150} Guests (150 â†’ ${value})`;
     const scaleFactor = (value - 150) / 30;
     const rows = d.rows.map(r => ({
       ...r,
@@ -713,32 +708,32 @@ function runSimulation() {
     const totalDelta = rows.reduce((sum, r) => sum + r.delta, 0);
     const totalAfter = d.totalBefore + totalDelta;
 
-    deltaEl.textContent = '+₹' + totalDelta.toLocaleString('en-IN');
+    deltaEl.textContent = '+â‚¹' + totalDelta.toLocaleString('en-IN');
     tbodyEl.innerHTML = rows.map(r => `
       <tr class="${r.affected ? 'sim-row-affected' : ''}">
         <td class="font-medium">${r.name}</td>
         <td class="td-num">${formatINRFull(r.before)}</td>
         <td class="td-num font-semibold">${formatINRFull(r.after)}</td>
         <td class="${r.delta > 0 ? 'sim-delta-up' : 'sim-delta-zero'}">
-          ${r.delta > 0 ? '+₹' + r.delta.toLocaleString('en-IN') : '—'}
+          ${r.delta > 0 ? '+â‚¹' + r.delta.toLocaleString('en-IN') : 'â€”'}
         </td>
       </tr>
     `).join('');
 
     beforeTotalEl.textContent = formatINRFull(d.totalBefore);
     afterTotalEl.textContent  = formatINRFull(totalAfter);
-    deltaTotalEl.textContent  = '+₹' + totalDelta.toLocaleString('en-IN');
+    deltaTotalEl.textContent  = '+â‚¹' + totalDelta.toLocaleString('en-IN');
 
     resultsEl.style.display = 'block';
     renderRecoveryOptions(totalDelta);
     recoveryEl.style.display = 'block';
   } else {
     titleEl.textContent = 'Simulated Impact';
-    deltaEl.textContent = '+₹40,000 (estimated)';
-    tbodyEl.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-3)">Sample simulation — use Guest Count for full calculation</td></tr>`;
-    beforeTotalEl.textContent = '₹8,00,000';
-    afterTotalEl.textContent = '₹8,40,000';
-    deltaTotalEl.textContent = '+₹40,000';
+    deltaEl.textContent = '+â‚¹40,000 (estimated)';
+    tbodyEl.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-3)">Sample simulation â€” use Guest Count for full calculation</td></tr>`;
+    beforeTotalEl.textContent = 'â‚¹8,00,000';
+    afterTotalEl.textContent = 'â‚¹8,40,000';
+    deltaTotalEl.textContent = '+â‚¹40,000';
     resultsEl.style.display = 'block';
     renderRecoveryOptions(40000);
     recoveryEl.style.display = 'block';
@@ -751,10 +746,10 @@ function renderRecoveryOptions(totalDelta) {
   const el = document.getElementById('recovery-cards');
   if (!el) return;
   el.innerHTML = EVENTRA.simulator.recoveryOptions.map(r => {
-    const stars = Array(5).fill(0).map((_,i) => `<span style="color:${i<r.stars?'var(--amber)':'var(--border-2)'}">★</span>`).join('');
+    const stars = Array(5).fill(0).map((_,i) => `<span style="color:${i<r.stars?'var(--amber)':'var(--border-2)'}">â˜…</span>`).join('');
     const usesContingency = r.usesContingency ? `
-      <div class="badge badge-red mb-2">⚠ Uses ₹${r.usesContingency.toLocaleString('en-IN')} of contingency</div>
-      <div class="text-xs text-secondary mb-2">Only ₹${r.contingencyRemaining.toLocaleString('en-IN')} remaining as buffer</div>
+      <div class="badge badge-red mb-2">âš  Uses â‚¹${r.usesContingency.toLocaleString('en-IN')} of contingency</div>
+      <div class="text-xs text-secondary mb-2">Only â‚¹${r.contingencyRemaining.toLocaleString('en-IN')} remaining as buffer</div>
     ` : '';
     return `
       <div class="recovery-card">
@@ -762,19 +757,19 @@ function renderRecoveryOptions(totalDelta) {
           <h4 class="font-bold text-sm">${r.title}</h4>
           <span class="badge badge-${r.riskColor==='green'?'green':r.riskColor==='red'?'red':'amber'}">${r.risk} Risk</span>
         </div>
-        ${r.saving > 0 ? `<div class="recovery-saving">−₹${r.saving.toLocaleString('en-IN')}</div>` : usesContingency}
+        ${r.saving > 0 ? `<div class="recovery-saving">âˆ’â‚¹${r.saving.toLocaleString('en-IN')}</div>` : usesContingency}
         <div class="recovery-action">${r.action}</div>
         <div class="recovery-meta">
           <span class="text-muted text-xs">Experience Impact: ${r.experienceImpact}</span>
           <span class="text-sm">${stars}</span>
         </div>
-        <button class="btn btn-outline btn-sm btn-full" onclick="showToast('Recovery scenario previewed — no changes applied')">Preview This Recovery</button>
+        <button class="btn btn-outline btn-sm btn-full" onclick="showToast('Recovery scenario previewed â€” no changes applied')">Preview This Recovery</button>
       </div>
     `;
   }).join('');
 }
 
-// ─── TRADE-OFF ADVISOR ───────────────────────────────────────
+// â”€â”€â”€ TRADE-OFF ADVISOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderTradeoff() {
   const el = document.getElementById('tradeoff-scenarios');
   if (!el) return;
@@ -792,12 +787,12 @@ function renderTradeoff() {
     const changes = s.changes.map(c => `
       <li>
         <span>${c.category}: ${c.change}</span>
-        <span class="change-saving">−₹${c.saving.toLocaleString('en-IN')}</span>
+        <span class="change-saving">âˆ’â‚¹${c.saving.toLocaleString('en-IN')}</span>
       </li>
     `).join('');
 
     const withinBadge = s.withinBudget
-      ? `<span class="badge badge-green" style="font-size:.8rem;padding:5px 12px">✓ Exactly within budget</span>`
+      ? `<span class="badge badge-green" style="font-size:.8rem;padding:5px 12px">âœ“ Exactly within budget</span>`
       : '';
 
     const vendorTrust = s.vendorTrustInfo ? `
@@ -827,8 +822,8 @@ function renderTradeoff() {
           <h3 class="font-bold">${s.title}</h3>
           <span class="badge ${idx===0?'badge-violet':idx===1?'badge-grey':'badge-green'}">${s.chip}</span>
         </div>
-        <div class="scenario-saving">−₹${s.saving.toLocaleString('en-IN')}</div>
-        <div class="scenario-total">New total: ₹${s.resultingTotal.toLocaleString('en-IN')} ${withinBadge}</div>
+        <div class="scenario-saving">âˆ’â‚¹${s.saving.toLocaleString('en-IN')}</div>
+        <div class="scenario-total">New total: â‚¹${s.resultingTotal.toLocaleString('en-IN')} ${withinBadge}</div>
         
         <h4 class="font-semibold text-sm mb-2 mt-4">Recommended Changes</h4>
         <ul class="scenario-changes">${changes}</ul>
@@ -841,8 +836,8 @@ function renderTradeoff() {
         ${impactBars('Quality',    s.qualityImpact)}
         ${impactBars('Convenience',s.convenienceImpact)}
         <div class="scenario-note">${s.guestNote}</div>
-        <button class="btn ${idx===0?'btn-primary':'btn-outline'} btn-full mt-4" onclick="showToast('Scenario previewed — go to Dashboard to apply')">
-          Explore This Scenario →
+        <button class="btn ${idx===0?'btn-primary':'btn-outline'} btn-full mt-4" onclick="showToast('Scenario previewed â€” go to Dashboard to apply')">
+          Explore This Scenario â†’
         </button>
       </div>
     `;
@@ -853,10 +848,10 @@ function toggleTOPri(el) {
   el.classList.toggle('active');
   const isProtected = el.classList.contains('active');
   const priName = el.dataset.pri;
-  el.innerHTML = el.innerHTML.replace(' 🔒','') + (isProtected ? ' 🔒' : '');
+  el.innerHTML = el.innerHTML.replace(' ðŸ”’','') + (isProtected ? ' ðŸ”’' : '');
 }
 
-// ─── VENDOR QUESTIONS ────────────────────────────────────────
+// â”€â”€â”€ VENDOR QUESTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function selectQTab(cat, el) {
   State.activeQTab = cat;
   document.querySelectorAll('#q-tabs .tab').forEach(t => t.classList.remove('active'));
@@ -899,10 +894,10 @@ function renderQuestions(cat) {
     <div class="card card-primary">
       <h4 class="font-semibold mb-2">How to use these questions</h4>
       <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px">
-        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">→</span>Send before paying any advance — vendor responses reveal their transparency</li>
-        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">→</span>A vendor who avoids direct answers to pricing questions is a red flag</li>
-        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">→</span>Request the answers in writing (WhatsApp message or email) for your records</li>
-        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">→</span>Update your quote analysis after receiving the answers</li>
+        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">â†’</span>Send before paying any advance â€” vendor responses reveal their transparency</li>
+        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">â†’</span>A vendor who avoids direct answers to pricing questions is a red flag</li>
+        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">â†’</span>Request the answers in writing (WhatsApp message or email) for your records</li>
+        <li class="text-sm flex items-start gap-2"><span style="color:var(--primary)">â†’</span>Update your quote analysis after receiving the answers</li>
       </ul>
     </div>
   `;
@@ -917,7 +912,7 @@ function copyAllQuestions(cat, vendorName) {
   copyToWhatsApp(text, vendorName);
 }
 
-// ─── SETUP FORM ─────────────────────────────────────────────
+// â”€â”€â”€ SETUP FORM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function setupNext(step) {
   if (step === 1) {
     if (!document.getElementById('f-type').value) { alert('Please select an event type'); return; }
@@ -928,7 +923,7 @@ function setupNext(step) {
     const g = parseInt(document.getElementById('f-guests').value);
     const b = parseInt(document.getElementById('f-budget').value);
     if (!g || g < 10 || g > 5000) { alert('Guest count must be between 10 and 5,000'); return; }
-    if (!b || b < 10000) { alert('Please enter a valid budget (minimum ₹10,000)'); return; }
+    if (!b || b < 10000) { alert('Please enter a valid budget (minimum â‚¹10,000)'); return; }
   }
   if (step === 3) {
     const active = document.querySelectorAll('#services-pills .pill.active');
@@ -953,14 +948,14 @@ function setupSubmit() {
     return;
   }
   document.getElementById('priority-error').classList.add('hidden');
-  showToast('Event setup complete! Analysing your budget…');
+  showToast('Event setup complete! Analysing your budgetâ€¦');
   setTimeout(() => navigateTo('feasibility'), 1200);
 }
 
 function markStepDone(step) {
   const node = document.getElementById(`snode-${step}`);
   const line = document.getElementById(`sline-${step}`);
-  if (node) { node.classList.remove('active'); node.classList.add('done'); node.textContent = '✓'; }
+  if (node) { node.classList.remove('active'); node.classList.add('done'); node.textContent = 'âœ“'; }
   if (line) line.classList.add('done');
 }
 
@@ -997,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ─── ACCORDIONS ─────────────────────────────────────────────
+// â”€â”€â”€ ACCORDIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function toggleAccordion(header) {
   const body = header.nextElementSibling;
   const chevron = header.querySelector('.accordion-chevron');
@@ -1007,7 +1002,7 @@ function toggleAccordion(header) {
   lucide.createIcons();
 }
 
-// ─── COPY / TOAST ────────────────────────────────────────────
+// â”€â”€â”€ COPY / TOAST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function copyToWhatsApp(questionsOrText, vendorName) {
   let text;
   if (typeof questionsOrText === 'string' && questionsOrText.includes('\n')) {
@@ -1019,8 +1014,8 @@ function copyToWhatsApp(questionsOrText, vendorName) {
       `\n\nThank you!`;
   }
   navigator.clipboard.writeText(text)
-    .then(() => showToast('✓ Copied to clipboard — ready to paste in WhatsApp'))
-    .catch(() => showToast('Could not copy — please select and copy manually'));
+    .then(() => showToast('âœ“ Copied to clipboard â€” ready to paste in WhatsApp'))
+    .catch(() => showToast('Could not copy â€” please select and copy manually'));
 }
 
 function showToast(message) {
@@ -1031,14 +1026,15 @@ function showToast(message) {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// ─── UTILITY ────────────────────────────────────────────────
+// â”€â”€â”€ UTILITY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function emptyState(msg) {
-  return `<div class="empty-state"><div class="empty-state-icon">📭</div><h3>Nothing here yet</h3><p>${msg}</p></div>`;
+  return `<div class="empty-state"><div class="empty-state-icon">ðŸ“­</div><h3>Nothing here yet</h3><p>${msg}</p></div>`;
 }
 
-// ─── INIT ───────────────────────────────────────────────────
+// â”€â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
   const hash = window.location.hash.replace('#','') || 'home';
   navigateTo(hash);
 });
+

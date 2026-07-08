@@ -1,99 +1,105 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eventra — Know the True Cost Before You Book</title>
+  <title>Eventra â€” Know the True Cost Before You Book</title>
   <meta name="description" content="Eventra calculates the true cost of your event, compares vendor quotations fairly, uncovers hidden charges, and helps you stay within budget.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- ════════════════════ SIDEBAR ════════════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SIDEBAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-mark">E</div>
     <span class="logo-text">Eventra</span>
   </div>
   <ul class="nav-list" id="nav-list">
-    <li><a href="#home"         class="nav-item active" data-route="home">        <i data-lucide="layout-dashboard"></i>        <span>Overview</span></a></li>
-    <li><a href="#directory"    class="nav-item" data-route="directory">          <i data-lucide="store"></i>                    <span>Vendor Directory</span></a></li>
-    <li><a href="#setup"        class="nav-item" data-route="setup">              <i data-lucide="calendar-plus"></i>            <span>My Event</span></a></li>
-    <li><a href="#feasibility"  class="nav-item" data-route="feasibility">        <i data-lucide="bar-chart-3"></i>              <span>Budget Plan</span></a></li>
-    <li><a href="#quotes"       class="nav-item" data-route="quotes">             <i data-lucide="file-search"></i>              <span>Quote Analysis</span></a></li>
-    <li><a href="#vendors"      class="nav-item" data-route="vendors">            <i data-lucide="users"></i>                    <span>Vendor Compare</span></a></li>
-    <li><a href="#hidden-costs" class="nav-item" data-route="hidden-costs">       <i data-lucide="shield-alert"></i>             <span>Hidden Costs</span></a></li>
-    <li><a href="#dashboard"    class="nav-item" data-route="dashboard">          <i data-lucide="layout-grid"></i>              <span>Dashboard</span></a></li>
-    <li><a href="#simulator"    class="nav-item" data-route="simulator">          <i data-lucide="sliders-horizontal"></i>       <span>Simulator</span></a></li>
-    <li><a href="#tradeoff"     class="nav-item" data-route="tradeoff">           <i data-lucide="scale"></i>                   <span>Trade-Off Advisor</span></a></li>
-    <li><a href="#questions"    class="nav-item" data-route="questions">          <i data-lucide="message-circle-question"></i>  <span>Questions</span></a></li>
+    <li class="nav-group-label">Plan</li>
+    <li><a href="#home" class="nav-item active" data-route="home"><i data-lucide="layout-grid"></i><span>Overview</span></a></li>
+    <li><a href="#setup" class="nav-item" data-route="setup"><i data-lucide="clipboard-list"></i><span>My Event</span></a></li>
+    <li><a href="#feasibility" class="nav-item" data-route="feasibility"><i data-lucide="bar-chart-3"></i><span>Budget Plan</span></a></li>
+    <li class="nav-group-label">Find</li>
+    <li><a href="#directory" class="nav-item" data-route="directory"><i data-lucide="store"></i><span>Vendor Directory</span></a></li>
+    <li><a href="#vendors" class="nav-item" data-route="vendors"><i data-lucide="scale"></i><span>Vendor Compare</span></a></li>
+    <li><a href="#quotes" class="nav-item" data-route="quotes"><i data-lucide="file-text"></i><span>Quote Analysis</span></a></li>
+    <li><a href="#hidden-costs" class="nav-item" data-route="hidden-costs"><i data-lucide="search-check"></i><span>Hidden Costs</span></a></li>
+    <li class="nav-group-label">Decide</li>
+    <li><a href="#simulator" class="nav-item" data-route="simulator"><i data-lucide="sliders-horizontal"></i><span>Simulator</span></a></li>
+    <li><a href="#tradeoff" class="nav-item" data-route="tradeoff"><i data-lucide="shuffle"></i><span>Trade-Off Advisor</span></a></li>
+    <li><a href="#dashboard" class="nav-item" data-route="dashboard"><i data-lucide="line-chart"></i><span>Dashboard</span></a></li>
+    <li class="nav-questions"><a href="#questions" class="nav-item" data-route="questions"><i data-lucide="help-circle"></i><span>Questions</span></a></li>
   </ul>
   <div class="sidebar-event">
-    <div class="sidebar-event-emoji">💍</div>
-    <div class="sidebar-event-name">Riya's Engagement</div>
-    <div class="sidebar-event-meta">18 Dec 2026 · Mumbai</div>
+    <div class="sidebar-event-avatar"><i data-lucide="gem"></i></div>
+    <div>
+      <div class="sidebar-event-name">Riya's Engagement</div>
+      <div class="sidebar-event-meta">18 Dec 2026 · Mumbai</div>
+    </div>
   </div>
 </nav>
 
-<!-- ════════════════════ MAIN ════════════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <main class="main" id="main">
 
-<!-- ══ SCREEN: Home / Landing ══════════════════════════════════ -->
+<!-- â•â• SCREEN: Home / Landing â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-home" class="screen active">
 
   <!-- Hero -->
-  <div class="hero">
+  <div class="hero overview-hero">
     <div class="hero-content">
-      <div class="hero-badge">✦ AI-Powered Budget Intelligence</div>
-      <h1>Plan the event you want—<br><span>without budget surprises.</span></h1>
-      <p>Eventra calculates the true cost of your event, compares vendor quotations fairly, uncovers hidden charges, and helps you stay confidently within budget.</p>
-      <div class="hero-event-selector" style="margin-top: 24px;">
-        <p style="color: rgba(255,255,255,0.8); margin-bottom: 16px; font-weight: 500; font-size: 1.1rem;">What are you planning?</p>
-        <div class="event-type-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 600px; margin: 0 auto 24px auto;">
-          <button class="btn btn-ghost" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: white; display: flex; flex-direction: column; align-items: center; padding: 24px 12px; height: auto; border-radius: 12px; transition: all 0.2s;" onclick="startPlanning('Wedding / Engagement')" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
-            <span style="font-size: 2.5rem; margin-bottom: 12px; display: block;">💍</span>
-            <span style="font-weight: 600; font-size: 1.05rem;">Wedding</span>
+      <div class="hero-badge"><i data-lucide="sparkles"></i> AI-powered budget intelligence</div>
+      <h1>Plan the event you want<br><span>without budget surprises.</span></h1>
+      <p>Eventra calculates the true cost of your event, compares vendor quotes fairly, uncovers hidden charges, and keeps you confidently within budget.</p>
+      <div class="hero-event-selector">
+        <h2>What are you planning?</h2>
+        <div class="event-type-grid">
+          <button class="planning-card" onclick="startPlanning('Wedding / Engagement')">
+            <span class="planning-glyph tile-peach"><i data-lucide="gem"></i></span>
+            <span class="planning-title">Wedding</span>
+            <span class="planning-copy">Multi-day, multi-vendor celebrations</span>
           </button>
-          <button class="btn btn-ghost" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: white; display: flex; flex-direction: column; align-items: center; padding: 24px 12px; height: auto; border-radius: 12px; transition: all 0.2s;" onclick="startPlanning('Birthday Party')" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
-            <span style="font-size: 2.5rem; margin-bottom: 12px; display: block;">🎂</span>
-            <span style="font-weight: 600; font-size: 1.05rem;">Birthday</span>
+          <button class="planning-card" onclick="startPlanning('Birthday Party')">
+            <span class="planning-glyph tile-pink"><i data-lucide="cake"></i></span>
+            <span class="planning-title">Birthday</span>
+            <span class="planning-copy">Intimate parties to big bashes</span>
           </button>
-          <button class="btn btn-ghost" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: white; display: flex; flex-direction: column; align-items: center; padding: 24px 12px; height: auto; border-radius: 12px; transition: all 0.2s;" onclick="startPlanning('Corporate Event')" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
-            <span style="font-size: 2.5rem; margin-bottom: 12px; display: block;">🏢</span>
-            <span style="font-weight: 600; font-size: 1.05rem;">Corporate</span>
+          <button class="planning-card" onclick="startPlanning('Corporate Event')">
+            <span class="planning-glyph tile-blue"><i data-lucide="building-2"></i></span>
+            <span class="planning-title">Corporate</span>
+            <span class="planning-copy">Offsites, launches and meetups</span>
           </button>
         </div>
-        <button class="btn btn-link" style="color: rgba(255,255,255,0.7); text-decoration: underline;" onclick="navigateTo('feasibility')">Or try a sample event →</button>
+        <button class="sample-link" onclick="navigateTo('feasibility')">Or try a sample event →</button>
       </div>
     </div>
   </div>
 
-
-
   <!-- How It Works -->
-  <div class="section" style="background:var(--surface)">
+  <div class="section how-band">
     <h2 class="section-title mb-2">How Eventra works</h2>
-    <p class="section-subtitle">Three steps from budget confusion to confident event decisions</p>
+    <p class="section-subtitle">Three steps from budget confusion to confident event decisions.</p>
     <div class="steps-row">
       <div class="step-card">
         <div class="step-num">1</div>
-        <h3>Describe your event</h3>
-        <p>Tell Eventra your event type, city, guest count, and budget. Our AI instantly builds a personalised feasibility analysis.</p>
+        <h3>Tell us your event</h3>
+        <p>Share your date, city, guest count and budget. Eventra builds a personalised plan in seconds.</p>
       </div>
       <div class="step-card">
         <div class="step-num">2</div>
-        <h3>Upload vendor quotes</h3>
-        <p>Drop in your vendor PDFs or paste prices. Eventra extracts every item, flags what's missing, and calculates the true final cost.</p>
+        <h3>See the true cost</h3>
+        <p>We reveal the real total: listed price plus GST, hidden charges and event-specific add-ons.</p>
       </div>
       <div class="step-card">
         <div class="step-num">3</div>
-        <h3>Compare, decide, protect</h3>
-        <p>See vendors ranked by true cost, detect hidden charges before signing, and simulate changes without breaking your budget.</p>
+        <h3>Decide with confidence</h3>
+        <p>Compare vendors fairly, weigh trade-offs, and stay on budget even when plans change.</p>
       </div>
     </div>
   </div>
@@ -103,27 +109,27 @@
     <div class="section-header">
       <div class="section-header-left">
         <h2 class="section-title">See it in action: Riya's Engagement</h2>
-        <p class="section-subtitle">₹8,00,000 budget · 150 guests · Mumbai · 18 Dec 2026</p>
+        <p class="section-subtitle">â‚¹8,00,000 budget Â· 150 guests Â· Mumbai Â· 18 Dec 2026</p>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="navigateTo('feasibility')">View Full Analysis →</button>
+      <button class="btn btn-primary btn-sm" onclick="navigateTo('feasibility')">View Full Analysis â†’</button>
     </div>
     <div class="grid-3">
       <div class="stat-card">
         <div class="stat-card-icon icon-amber"><i data-lucide="target"></i></div>
         <div class="stat-card-label">Feasibility Score</div>
         <div class="stat-card-value" style="color:var(--amber)">Stretch</div>
-        <div class="stat-card-sub">92% — achievable with care</div>
+        <div class="stat-card-sub">92% â€” achievable with care</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-icon icon-red"><i data-lucide="trending-up"></i></div>
         <div class="stat-card-label">Estimated Final Cost</div>
-        <div class="stat-card-value">₹8,65,000</div>
-        <div class="stat-card-sub" style="color:var(--red)">₹65,000 over budget</div>
+        <div class="stat-card-value">â‚¹8,65,000</div>
+        <div class="stat-card-sub" style="color:var(--red)">â‚¹65,000 over budget</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-icon icon-amber"><i data-lucide="eye-off"></i></div>
         <div class="stat-card-label">Hidden Cost Risk</div>
-        <div class="stat-card-value">₹42K–₹68K</div>
+        <div class="stat-card-value">â‚¹42Kâ€“â‚¹68K</div>
         <div class="stat-card-sub">12 items flagged across vendors</div>
       </div>
     </div>
@@ -139,38 +145,50 @@
   <!-- Final CTA -->
   <div class="section" style="background:linear-gradient(135deg,var(--sidebar-bg),#252840);color:#fff;text-align:center">
     <div style="max-width:500px;margin:0 auto">
-      <div style="font-size:2rem;margin-bottom:12px">💍</div>
+      <div style="font-size:2rem;margin-bottom:12px">ðŸ’</div>
       <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:10px;color:#fff">Ready to know your true event cost?</h2>
-      <p style="color:rgba(255,255,255,.65);margin-bottom:24px">Answer 4 questions. Get an instant budget analysis. No vendor discovery, no distractions — just the numbers you need.</p>
-      <button class="btn btn-primary btn-lg" onclick="navigateTo('setup')">Start Planning — It's Free</button>
+      <p style="color:rgba(255,255,255,.65);margin-bottom:24px">Answer 4 questions. Get an instant budget analysis. No vendor discovery, no distractions â€” just the numbers you need.</p>
+      <button class="btn btn-primary btn-lg" onclick="navigateTo('setup')">Start Planning â€” It's Free</button>
     </div>
   </div>
 </section>
 
 
 
-<!-- ══ SCREEN: Event Setup ══════════════════════════════════════ -->
+<!-- â•â• SCREEN: Event Setup â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-setup" class="screen">
   <div class="page-header">
-    <h1>My Event</h1>
-    <p>Tell Eventra about your event — we'll build a personalised budget analysis</p>
+    <h1>Set up your event</h1>
+    <p>Tell us the basics. Eventra builds a personalised budget analysis.</p>
   </div>
   <div class="page-body">
-    <div style="max-width:580px;margin:0 auto">
+    <div class="setup-shell">
       <!-- Step Track -->
       <div class="step-track" id="step-track">
-        <div class="step-node active" id="snode-1">1</div>
+        <div class="step-unit">
+          <div class="step-node active" id="snode-1">1</div>
+          <span>Basics</span>
+        </div>
         <div class="step-line" id="sline-1"></div>
-        <div class="step-node" id="snode-2">2</div>
+        <div class="step-unit">
+          <div class="step-node" id="snode-2">2</div>
+          <span>Guests</span>
+        </div>
         <div class="step-line" id="sline-2"></div>
-        <div class="step-node" id="snode-3">3</div>
+        <div class="step-unit">
+          <div class="step-node" id="snode-3">3</div>
+          <span>Budget</span>
+        </div>
         <div class="step-line" id="sline-3"></div>
-        <div class="step-node" id="snode-4">4</div>
+        <div class="step-unit">
+          <div class="step-node" id="snode-4">4</div>
+          <span>Review</span>
+        </div>
       </div>
-
       <!-- Step 1 -->
       <div class="card" id="setup-step-1">
-        <h3 class="card-title">Step 1 of 4 — Event Basics</h3>
+        <div class="step-eyebrow">Step 1 of 4</div>
+        <h3 class="card-title">Event basics</h3>
         <p class="card-subtitle">What kind of event are you planning?</p>
         <div class="form-group">
           <label class="form-label">Event Type</label>
@@ -202,13 +220,13 @@
           </select>
         </div>
         <div class="flex gap-3 mt-4">
-          <button class="btn btn-primary flex-1" onclick="setupNext(1)">Next →</button>
+          <button class="btn btn-primary btn-full" onclick="setupNext(1)">Continue →</button>
         </div>
       </div>
 
       <!-- Step 2 -->
       <div class="card hidden" id="setup-step-2">
-        <h3 class="card-title">Step 2 of 4 — Scale & Budget</h3>
+        <h3 class="card-title">Step 2 of 4 â€” Scale & Budget</h3>
         <p class="card-subtitle">Help us understand the size and financial scope of your event</p>
         <div class="form-group">
           <label class="form-label">Total Guest Count</label>
@@ -216,9 +234,9 @@
           <div class="form-hint">Between 10 and 5,000 guests</div>
         </div>
         <div class="form-group">
-          <label class="form-label">Total Budget (₹)</label>
+          <label class="form-label">Total Budget (â‚¹)</label>
           <input type="number" class="form-input" id="f-budget" value="800000" min="10000" placeholder="e.g. 800000">
-          <div class="form-hint" id="budget-hint">₹8,00,000</div>
+          <div class="form-hint" id="budget-hint">â‚¹8,00,000</div>
         </div>
         <div class="form-group">
           <label class="form-label">Number of Functions</label>
@@ -226,14 +244,14 @@
           <div class="form-hint">e.g. 1 for engagement, 3 for wedding (mehendi + sangeet + reception)</div>
         </div>
         <div class="flex gap-3 mt-4">
-          <button class="btn btn-ghost flex-1" onclick="setupBack(2)">← Back</button>
-          <button class="btn btn-primary flex-1" onclick="setupNext(2)">Next →</button>
+          <button class="btn btn-ghost flex-1" onclick="setupBack(2)">â† Back</button>
+          <button class="btn btn-primary flex-1" onclick="setupNext(2)">Next â†’</button>
         </div>
       </div>
 
       <!-- Step 3 -->
       <div class="card hidden" id="setup-step-3">
-        <h3 class="card-title">Step 3 of 4 — Required Services</h3>
+        <h3 class="card-title">Step 3 of 4 â€” Required Services</h3>
         <p class="card-subtitle">Select all services you'll need for your event</p>
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px" id="services-pills">
           <div class="pill active" data-service="Venue" onclick="togglePill(this)"><i data-lucide="building-2" style="width:14px;height:14px"></i>Venue</div>
@@ -247,23 +265,23 @@
           <div class="pill" data-service="Accommodation" onclick="togglePill(this)"><i data-lucide="hotel" style="width:14px;height:14px"></i>Accommodation</div>
         </div>
         <div class="flex gap-3 mt-4">
-          <button class="btn btn-ghost flex-1" onclick="setupBack(3)">← Back</button>
-          <button class="btn btn-primary flex-1" onclick="setupNext(3)">Next →</button>
+          <button class="btn btn-ghost flex-1" onclick="setupBack(3)">â† Back</button>
+          <button class="btn btn-primary flex-1" onclick="setupNext(3)">Next â†’</button>
         </div>
       </div>
 
       <!-- Step 4 -->
       <div class="card hidden" id="setup-step-4">
-        <h3 class="card-title">Step 4 of 4 — Priorities & Style</h3>
-        <p class="card-subtitle">Select your top 3 priorities — these will always be protected in our recommendations</p>
+        <h3 class="card-title">Step 4 of 4 â€” Priorities & Style</h3>
+        <p class="card-subtitle">Select your top 3 priorities â€” these will always be protected in our recommendations</p>
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px" id="priority-pills">
-          <div class="pill active" data-priority="Food Quality" onclick="togglePriority(this)">🍽️ Food Quality</div>
-          <div class="pill" data-priority="Venue" onclick="togglePriority(this)">🏛️ Venue</div>
-          <div class="pill" data-priority="Décor" onclick="togglePriority(this)">🌸 Décor</div>
-          <div class="pill active" data-priority="Photography" onclick="togglePriority(this)">📸 Photography</div>
-          <div class="pill" data-priority="Entertainment" onclick="togglePriority(this)">🎵 Entertainment</div>
-          <div class="pill" data-priority="Convenience" onclick="togglePriority(this)">🎯 Convenience</div>
-          <div class="pill active" data-priority="Guest Experience" onclick="togglePriority(this)">⭐ Guest Experience</div>
+          <div class="pill active" data-priority="Food Quality" onclick="togglePriority(this)">ðŸ½ï¸ Food Quality</div>
+          <div class="pill" data-priority="Venue" onclick="togglePriority(this)">ðŸ›ï¸ Venue</div>
+          <div class="pill" data-priority="DÃ©cor" onclick="togglePriority(this)">ðŸŒ¸ DÃ©cor</div>
+          <div class="pill active" data-priority="Photography" onclick="togglePriority(this)">ðŸ“¸ Photography</div>
+          <div class="pill" data-priority="Entertainment" onclick="togglePriority(this)">ðŸŽµ Entertainment</div>
+          <div class="pill" data-priority="Convenience" onclick="togglePriority(this)">ðŸŽ¯ Convenience</div>
+          <div class="pill active" data-priority="Guest Experience" onclick="togglePriority(this)">â­ Guest Experience</div>
         </div>
         <div id="priority-error" class="form-error hidden">Please select exactly 3 priorities</div>
         <div class="form-group mt-4">
@@ -276,19 +294,19 @@
           </select>
         </div>
         <div class="flex gap-3 mt-4">
-          <button class="btn btn-ghost flex-1" onclick="setupBack(4)">← Back</button>
-          <button class="btn btn-primary flex-1" onclick="setupSubmit()">Analyse My Budget →</button>
+          <button class="btn btn-ghost flex-1" onclick="setupBack(4)">â† Back</button>
+          <button class="btn btn-primary flex-1" onclick="setupSubmit()">Analyse My Budget â†’</button>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══ SCREEN: Budget Feasibility ══════════════════════════════ -->
+<!-- â•â• SCREEN: Budget Feasibility â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-feasibility" class="screen">
   <div class="page-header">
     <h1>Budget Feasibility Analysis</h1>
-    <p>Is your ₹8,00,000 budget realistic for 150 guests in Mumbai?</p>
+    <p>Is your â‚¹8,00,000 budget realistic for 150 guests in Mumbai?</p>
   </div>
   <div class="page-body">
     <div class="grid-2 gap-6 mb-5">
@@ -301,14 +319,14 @@
               <circle class="score-ring-fill" id="feas-ring" cx="80" cy="80" r="65" stroke="#F59E0B" stroke-dasharray="408.41" stroke-dashoffset="32.67"/>
             </svg>
             <div class="feasibility-ring-label" style="color:var(--amber)">Stretch</div>
-            <div class="feasibility-ring-sub">Feasibility Score · 92%</div>
+            <div class="feasibility-ring-sub">Feasibility Score Â· 92%</div>
           </div>
         </div>
         <div class="ai-box mb-4">
-          <div class="ai-box-icon">✨</div>
+          <div class="ai-box-icon">âœ¨</div>
           <div>
             <div class="ai-box-label">AI Insight</div>
-            <div class="ai-box-text">Your ₹8,00,000 budget for 150 guests in Mumbai is achievable but tight. Venue and catering will consume ~55%. Prioritise a mid-range banquet hall and keep décor minimal. Photography and food quality can be fully protected within this plan.</div>
+            <div class="ai-box-text">Your â‚¹8,00,000 budget for 150 guests in Mumbai is achievable but tight. Venue and catering will consume ~55%. Prioritise a mid-range banquet hall and keep dÃ©cor minimal. Photography and food quality can be fully protected within this plan.</div>
             <div class="mt-2"><span class="badge badge-amber">Confidence: High</span></div>
           </div>
         </div>
@@ -324,20 +342,20 @@
           <div style="display:flex;flex-direction:column;gap:12px">
             <div class="flex justify-between items-center">
               <span class="text-secondary text-sm">Total Budget</span>
-              <span class="font-bold">₹8,00,000</span>
+              <span class="font-bold">â‚¹8,00,000</span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-secondary text-sm">Estimated Min Cost</span>
-              <span class="font-bold">₹8,65,000</span>
+              <span class="font-bold">â‚¹8,65,000</span>
             </div>
             <div class="border-t"></div>
             <div class="flex justify-between items-center">
               <span class="text-secondary text-sm">Budget Gap</span>
-              <span class="font-bold" style="color:var(--red)">−₹65,000</span>
+              <span class="font-bold" style="color:var(--red)">âˆ’â‚¹65,000</span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-secondary text-sm">Contingency Reserved</span>
-              <span class="font-bold">₹80,000</span>
+              <span class="font-bold">â‚¹80,000</span>
             </div>
             <div class="border-t"></div>
           </div>
@@ -345,8 +363,8 @@
             <div class="progress-bar progress-amber" style="width:92%"></div>
           </div>
           <div class="flex justify-between mt-1">
-            <span class="text-xs text-muted">₹0</span>
-            <span class="text-xs text-muted">₹8,00,000</span>
+            <span class="text-xs text-muted">â‚¹0</span>
+            <span class="text-xs text-muted">â‚¹8,00,000</span>
           </div>
         </div>
 
@@ -355,16 +373,16 @@
             <i data-lucide="info" style="width:18px;color:var(--amber)"></i>
             <span class="font-semibold text-sm">What "Stretch" means</span>
           </div>
-          <p class="text-sm" style="color:var(--text-2);line-height:1.6">Your budget can work but every vendor choice matters. One over-budget vendor without recovery will push you past ₹8L. Use the Trade-Off Advisor if any category runs over.</p>
+          <p class="text-sm" style="color:var(--text-2);line-height:1.6">Your budget can work but every vendor choice matters. One over-budget vendor without recovery will push you past â‚¹8L. Use the Trade-Off Advisor if any category runs over.</p>
         </div>
 
         <div class="card mb-4" style="background:var(--surface-2);border:none">
-          <h4 class="font-semibold mb-3 text-sm">Market Benchmarks — Mumbai</h4>
+          <h4 class="font-semibold mb-3 text-sm">Market Benchmarks â€” Mumbai</h4>
           <div style="font-size:.82rem;display:flex;flex-direction:column;gap:8px" id="feas-benchmarks"></div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:10px">
-          <button class="btn btn-primary btn-full" onclick="navigateTo('quotes')">Continue to Quote Analysis →</button>
+          <button class="btn btn-primary btn-full" onclick="navigateTo('quotes')">Continue to Quote Analysis â†’</button>
           <button class="btn btn-outline btn-full" onclick="navigateTo('setup')">Adjust My Event</button>
           <button class="btn btn-ghost btn-full" onclick="navigateTo('tradeoff')">View Trade-Off Options</button>
         </div>
@@ -373,24 +391,24 @@
   </div>
 </section>
 
-<!-- ══ SCREEN: Quote Analysis ══════════════════════════════════ -->
+<!-- â•â• SCREEN: Quote Analysis â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-quotes" class="screen">
   <div class="page-header">
     <h1>Quote Analysis</h1>
-    <p>Upload a vendor quotation — Eventra extracts every item and calculates your true final cost</p>
+    <p>Upload a vendor quotation â€” Eventra extracts every item and calculates your true final cost</p>
   </div>
   <div class="page-body">
     <div class="tab-bar" id="quote-tabs">
-      <div class="tab active" onclick="selectQuoteTab('photography',this)">📸 Photography</div>
-      <div class="tab" onclick="selectQuoteTab('venue',this)">🏛️ Venue</div>
-      <div class="tab" onclick="selectQuoteTab('catering',this)">🍽️ Catering</div>
-      <div class="tab" onclick="selectQuoteTab('decoration',this)">🌸 Decoration</div>
+      <div class="tab active" onclick="selectQuoteTab('photography',this)">ðŸ“¸ Photography</div>
+      <div class="tab" onclick="selectQuoteTab('venue',this)">ðŸ›ï¸ Venue</div>
+      <div class="tab" onclick="selectQuoteTab('catering',this)">ðŸ½ï¸ Catering</div>
+      <div class="tab" onclick="selectQuoteTab('decoration',this)">ðŸŒ¸ Decoration</div>
     </div>
     <div id="quote-content"></div>
   </div>
 </section>
 
-<!-- ══ SCREEN: Vendor Comparison ═══════════════════════════════ -->
+<!-- â•â• SCREEN: Vendor Comparison â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-vendors" class="screen">
   <div class="page-header">
     <h1>Vendor Comparison</h1>
@@ -398,27 +416,27 @@
   </div>
   <div class="page-body">
     <div class="tab-bar" id="vendor-tabs">
-      <div class="tab active" onclick="selectVendorTab('photography',this)">📸 Photography (3)</div>
-      <div class="tab" onclick="selectVendorTab('venue',this)">🏛️ Venue (1)</div>
-      <div class="tab" onclick="selectVendorTab('catering',this)">🍽️ Catering (1)</div>
-      <div class="tab" onclick="selectVendorTab('decoration',this)">🌸 Decoration (1)</div>
+      <div class="tab active" onclick="selectVendorTab('photography',this)">ðŸ“¸ Photography (3)</div>
+      <div class="tab" onclick="selectVendorTab('venue',this)">ðŸ›ï¸ Venue (1)</div>
+      <div class="tab" onclick="selectVendorTab('catering',this)">ðŸ½ï¸ Catering (1)</div>
+      <div class="tab" onclick="selectVendorTab('decoration',this)">ðŸŒ¸ Decoration (1)</div>
     </div>
     <div id="vendor-content"></div>
   </div>
 </section>
 
-<!-- ══ SCREEN: Hidden Costs ════════════════════════════════════ -->
+<!-- â•â• SCREEN: Hidden Costs â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-hidden-costs" class="screen">
   <div class="page-header">
     <h1>Hidden Cost Detector</h1>
-    <p>Every potential charge across all your vendors — mapped before you sign anything</p>
+    <p>Every potential charge across all your vendors â€” mapped before you sign anything</p>
   </div>
   <div class="page-body">
     <!-- Summary Banner -->
     <div class="hc-summary">
       <div>
         <div style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.75;margin-bottom:6px">TOTAL POTENTIAL HIDDEN CHARGES</div>
-        <h2>₹42,000–₹68,000</h2>
+        <h2>â‚¹42,000â€“â‚¹68,000</h2>
         <p>estimated across your 4 selected vendor categories</p>
       </div>
       <div class="hc-summary-stats">
@@ -438,10 +456,10 @@
     </div>
 
     <div class="ai-box mb-5">
-      <div class="ai-box-icon">⚠️</div>
+      <div class="ai-box-icon">âš ï¸</div>
       <div>
         <div class="ai-box-label">Biggest Risk</div>
-        <div class="ai-box-text">The venue's GST (18%) and service charges are not mentioned in the quote. These alone could add ₹32,000–₹57,000 to the venue bill. Ask Royal Orchid Banquet to confirm the GST-inclusive total before paying any advance.</div>
+        <div class="ai-box-text">The venue's GST (18%) and service charges are not mentioned in the quote. These alone could add â‚¹32,000â€“â‚¹57,000 to the venue bill. Ask Royal Orchid Banquet to confirm the GST-inclusive total before paying any advance.</div>
       </div>
     </div>
 
@@ -449,11 +467,11 @@
   </div>
 </section>
 
-<!-- ══ SCREEN: Budget Dashboard ════════════════════════════════ -->
+<!-- â•â• SCREEN: Budget Dashboard â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-dashboard" class="screen">
   <div class="page-header">
     <h1>Budget Protection Dashboard</h1>
-    <p>Your single source of truth for all financial commitments · Riya's Engagement</p>
+    <p>Your single source of truth for all financial commitments Â· Riya's Engagement</p>
   </div>
   <div class="page-body">
     <!-- Stat Cards -->
@@ -478,7 +496,7 @@
             <i data-lucide="calendar" style="width:14px;color:var(--text-3)"></i>
             <span class="text-sm text-muted" id="nbd-deadline"></span>
           </div>
-          <button class="btn btn-outline btn-sm mt-3" onclick="navigateTo('questions')">Get Questions to Ask →</button>
+          <button class="btn btn-outline btn-sm mt-3" onclick="navigateTo('questions')">Get Questions to Ask â†’</button>
         </div>
         <div class="card">
           <h3 class="font-semibold mb-3">Recent Updates</h3>
@@ -508,16 +526,16 @@
   </div>
 </section>
 
-<!-- ══ SCREEN: Change Simulator ════════════════════════════════ -->
+<!-- â•â• SCREEN: Change Simulator â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-simulator" class="screen">
   <div class="page-header">
     <h1>Change Impact Simulator</h1>
-    <p>Simulate any change to your event — see exactly what it costs and how to recover</p>
+    <p>Simulate any change to your event â€” see exactly what it costs and how to recover</p>
   </div>
   <div class="page-body">
     <div class="sim-mode-banner">
       <i data-lucide="eye" style="width:15px"></i>
-      Simulation Mode — no changes are applied to your budget until you confirm
+      Simulation Mode â€” no changes are applied to your budget until you confirm
     </div>
 
     <!-- Controls -->
@@ -575,19 +593,19 @@
   </div>
 </section>
 
-<!-- ══ SCREEN: Trade-Off Advisor ═══════════════════════════════ -->
+<!-- â•â• SCREEN: Trade-Off Advisor â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-tradeoff" class="screen">
   <div class="page-header">
     <h1>Trade-Off Advisor</h1>
-    <p>3 priority-aware paths to bring your event within budget — none touch your stated priorities</p>
+    <p>3 priority-aware paths to bring your event within budget â€” none touch your stated priorities</p>
   </div>
   <div class="page-body">
     <!-- Alert Banner -->
     <div class="tradeoff-banner">
-      <div class="tradeoff-banner-icon">⚠️</div>
+      <div class="tradeoff-banner-icon">âš ï¸</div>
       <div>
-        <h3>Your estimated final cost of ₹8,65,000 exceeds your budget by ₹65,000</h3>
-        <p>Select the priorities you want to protect — Eventra will generate 3 distinct recovery scenarios that never touch your core priorities.</p>
+        <h3>Your estimated final cost of â‚¹8,65,000 exceeds your budget by â‚¹65,000</h3>
+        <p>Select the priorities you want to protect â€” Eventra will generate 3 distinct recovery scenarios that never touch your core priorities.</p>
       </div>
     </div>
 
@@ -596,13 +614,13 @@
       <h3 class="font-semibold mb-2">What must I protect?</h3>
       <p class="text-sm text-secondary mb-3">Protected categories will not appear in any scenario recommendations</p>
       <div style="display:flex;flex-wrap:wrap;gap:10px" id="tradeoff-priorities">
-        <div class="pill active" data-pri="Food Quality" onclick="toggleTOPri(this)">🍽️ Food Quality 🔒</div>
-        <div class="pill" data-pri="Venue" onclick="toggleTOPri(this)">🏛️ Venue</div>
-        <div class="pill" data-pri="Décor" onclick="toggleTOPri(this)">🌸 Décor</div>
-        <div class="pill active" data-pri="Photography" onclick="toggleTOPri(this)">📸 Photography 🔒</div>
-        <div class="pill" data-pri="Entertainment" onclick="toggleTOPri(this)">🎵 Entertainment</div>
-        <div class="pill" data-pri="Convenience" onclick="toggleTOPri(this)">🎯 Convenience</div>
-        <div class="pill active" data-pri="Guest Experience" onclick="toggleTOPri(this)">⭐ Guest Experience 🔒</div>
+        <div class="pill active" data-pri="Food Quality" onclick="toggleTOPri(this)">ðŸ½ï¸ Food Quality ðŸ”’</div>
+        <div class="pill" data-pri="Venue" onclick="toggleTOPri(this)">ðŸ›ï¸ Venue</div>
+        <div class="pill" data-pri="DÃ©cor" onclick="toggleTOPri(this)">ðŸŒ¸ DÃ©cor</div>
+        <div class="pill active" data-pri="Photography" onclick="toggleTOPri(this)">ðŸ“¸ Photography ðŸ”’</div>
+        <div class="pill" data-pri="Entertainment" onclick="toggleTOPri(this)">ðŸŽµ Entertainment</div>
+        <div class="pill" data-pri="Convenience" onclick="toggleTOPri(this)">ðŸŽ¯ Convenience</div>
+        <div class="pill active" data-pri="Guest Experience" onclick="toggleTOPri(this)">â­ Guest Experience ðŸ”’</div>
       </div>
     </div>
 
@@ -611,7 +629,7 @@
     <div class="grid-3 gap-5" id="tradeoff-scenarios"></div>
 
     <div class="ai-box mt-5">
-      <div class="ai-box-icon">📋</div>
+      <div class="ai-box-icon">ðŸ“‹</div>
       <div>
         <div class="ai-box-label">Disclaimer</div>
         <div class="ai-box-text">Eventra's estimates are based on your quotations and Mumbai market benchmarks. Final costs may vary. Always confirm all charges with vendors before paying any advance.</div>
@@ -620,15 +638,15 @@
   </div>
 </section>
 
-<!-- ══ SCREEN: Vendor Questions ════════════════════════════════ -->
+<!-- â•â• SCREEN: Vendor Questions â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-questions" class="screen">
   <div class="page-header">
     <h1>Vendor Questions Generator</h1>
-    <p>Ask the right questions before signing — generated from your specific quotation gaps</p>
+    <p>Ask the right questions before signing â€” generated from your specific quotation gaps</p>
   </div>
   <div class="page-body">
     <div class="ai-box mb-5">
-      <div class="ai-box-icon">💬</div>
+      <div class="ai-box-icon">ðŸ’¬</div>
       <div>
         <div class="ai-box-label">How to use these</div>
         <div class="ai-box-text">These questions are generated from what is missing or unclear in each vendor's quotation. Copy the WhatsApp message and send it before paying any advance. Vendors who avoid direct answers to these questions are a red flag.</div>
@@ -637,30 +655,29 @@
 
     <!-- Category Selector -->
     <div class="tab-bar" id="q-tabs">
-      <div class="tab active" onclick="selectQTab('Photography',this)">📸 Photography</div>
-      <div class="tab" onclick="selectQTab('Venue',this)">🏛️ Venue</div>
-      <div class="tab" onclick="selectQTab('Catering',this)">🍽️ Catering</div>
-      <div class="tab" onclick="selectQTab('Decoration',this)">🌸 Decoration</div>
-      <div class="tab" onclick="selectQTab('Makeup',this)">💄 Makeup</div>
+      <div class="tab active" onclick="selectQTab('Photography',this)">ðŸ“¸ Photography</div>
+      <div class="tab" onclick="selectQTab('Venue',this)">ðŸ›ï¸ Venue</div>
+      <div class="tab" onclick="selectQTab('Catering',this)">ðŸ½ï¸ Catering</div>
+      <div class="tab" onclick="selectQTab('Decoration',this)">ðŸŒ¸ Decoration</div>
+      <div class="tab" onclick="selectQTab('Makeup',this)">ðŸ’„ Makeup</div>
     </div>
     <div id="q-content"></div>
   </div>
 </section>
 
-</section>
-
-<!-- ══ SCREEN: Vendor Directory ════════════════════════════════ -->
+<!-- â•â• SCREEN: Vendor Directory â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="screen-directory" class="screen">
   <div class="page-header">
-    <h1>Vendor Directory</h1>
-    <p>Explore vendors, hotels, and farmhouses with transparent profile data</p>
+    <h1>Vendors, with the real price up front</h1>
+    <p>Every total is all-in for your event: 150 guests, GST and known extras included.</p>
   </div>
   <div class="page-body">
     <div class="tab-bar" id="directory-tabs">
-      <div class="tab active" onclick="selectDirectoryTab('all', this)">All Vendors</div>
-      <div class="tab" onclick="selectDirectoryTab('Hotel', this)">Hotels & Banquets</div>
+      <div class="tab active" onclick="selectDirectoryTab('all', this)">All</div>
+      <div class="tab" onclick="selectDirectoryTab('Hotel', this)">Venues</div>
       <div class="tab" onclick="selectDirectoryTab('Farmhouse', this)">Farmhouses</div>
       <div class="tab" onclick="selectDirectoryTab('Photographer', this)">Photographers</div>
+      <div class="tab" onclick="selectDirectoryTab('Decorator', this)">Décor</div>
     </div>
     <div class="grid-3" id="directory-content"></div>
   </div>
@@ -694,3 +711,8 @@
 <script src="app.js"></script>
 </body>
 </html>
+
+
+
+
+
