@@ -439,25 +439,41 @@ function selectQuoteTab(cat, el) {
 function renderQuotes(cat) {
  const el = document.getElementById('quote-content');
  if (!el) return;
- const vendors = EVENTRA.vendors[cat] || [];
- if (!vendors.length) { el.innerHTML = emptyState('No quotes uploaded for this category yet.'); return; }
- el.innerHTML = vendors.map(v => renderQuoteCard(v)).join('');
+ const plan = buildBudgetPlan();
+ const category = quoteCategoryFromTab(cat);
+ const vendors = getComparisonVendors(category, plan);
+ if (!vendors.length) { el.innerHTML = emptyState(`No ${category.toLowerCase()} quote samples available for ${plan.city} yet.`); return; }
+ el.innerHTML = vendors.map(v => renderQuoteCard(v, plan)).join('');
  lucide.createIcons();
 }
 
-function renderQuoteCard(v) {
+function quoteCategoryFromTab(cat) {
+ return { photography:'Photography', venue:'Venue', catering:'Catering', decoration:'Decoration' }[cat] || cat;
+}
+
+function vendorTypeIcon(type, category) {
+ const key = type || category;
+ return { Hotel:'hotel', Farmhouse:'trees', Photographer:'camera', Decorator:'flower-2', Catering:'utensils', Venue:'building-2', Photography:'camera', Decoration:'sparkles' }[key] || 'store';
+}
+
+function renderQuoteCard(v, plan) {
  const included = v.included.map(i => `<div class="quote-status quote-status-good"><i data-lucide="check-circle-2"></i><span>${i}</span></div>`).join('');
  const missing = v.excluded.map(i => `<div class="quote-status quote-status-warn"><i data-lucide="alert-triangle"></i><span>${i}</span></div>`).join('');
  const confColor = { High:'green', Medium:'amber', Low:'red' }[v.confidence] || 'grey';
+ const icon = vendorTypeIcon(v.profile?.type, v.category);
+ const marketMin = Math.round(v.fit.target * 0.9);
+ const marketMax = Math.round(v.fit.target * 1.25);
+ const hiddenMin = Math.max(0, v.estimatedFinalMin - v.quotedPrice);
+ const hiddenMax = Math.max(hiddenMin, v.estimatedFinalMax - v.quotedPrice);
  return `
  <div class="card mb-4">
  <div class="flex justify-between items-start mb-4">
  <div>
  <div class="flex items-center gap-2 mb-1">
- <span style="font-size:1.5rem">${v.image}</span>
+ <span class="vendor-logo-tile tile-blue" style="width:38px;height:38px"><i data-lucide="${icon}"></i></span>
  <div>
  <h3 class="font-bold text-lg">${v.name}</h3>
- <span class="text-muted text-sm">${v.location}</span>
+ <span class="text-muted text-sm">${v.location} - ${plan.guests} guests</span>
  </div>
  </div>
  </div>
@@ -492,7 +508,7 @@ function renderQuoteCard(v) {
  <div>
  <div class="font-semibold text-sm mb-2" style="color:var(--amber)">Likely Missing</div>
  ${missing}
- <div class="mt-2 text-sm" style="color:var(--red);font-weight:600">Hidden estimate: ${v.hiddenEstimate || (formatINRFull(v.estimatedFinalMin - v.quotedPrice) + '-' + formatINRFull(v.estimatedFinalMax - v.quotedPrice))}</div>
+ <div class="mt-2 text-sm" style="color:var(--red);font-weight:600">Hidden estimate: ${formatINRFull(hiddenMin)}-${formatINRFull(hiddenMax)}</div>
  </div>
  </div>
 
@@ -507,9 +523,9 @@ function renderQuoteCard(v) {
 
  <!-- Benchmark -->
  <div style="background:var(--surface-2);border-radius:var(--radius);padding:12px 14px;font-size:.82rem;margin-bottom:16px">
- <span class="text-secondary">Market range for ${v.category} in Mumbai: </span>
- <span class="font-semibold">Rs.55,000-Rs.1,20,000</span>
- <span class="badge badge-green ml-auto" style="float:right">Within market range</span>
+ <span class="text-secondary">Market range for ${v.category} in ${plan.city}: </span>
+ <span class="font-semibold">${formatINRFull(marketMin)}-${formatINRFull(marketMax)}</span>
+ <span class="badge badge-${v.fit.color} ml-auto" style="float:right">${v.fit.label}</span>
  </div>
 
  <button class="btn btn-primary btn-sm" onclick="navigateTo('vendors')">Add to Comparison</button>
@@ -661,10 +677,11 @@ function vendorQuestionsForType(type, plan) {
 
 function renderVendorSingle(v, plan) {
  const scoreClass = v.matchScore >= 75 ? 'score-green' : v.matchScore >= 60 ? 'score-amber' : 'score-red';
+ const icon = vendorTypeIcon(v.profile?.type, v.category);
  return `
  <div class="flex items-center justify-between mb-4">
  <div class="flex items-center gap-3">
- <span style="font-size:1.8rem">${v.image}</span>
+ <span class="vendor-logo-tile tile-blue" style="width:42px;height:42px"><i data-lucide="${icon}"></i></span>
  <div>
  <h3 class="font-bold">${v.name}</h3>
  <span class="text-muted text-sm">${v.location}</span>
@@ -720,7 +737,7 @@ function renderComparisonTable(vendors, plan) {
 
  const headers = vendors.map(v => `
  <th class="vendor-col-header">
- <div style="font-size:1.3rem;margin-bottom:6px">${v.image}</div>
+ <div class="vendor-logo-tile tile-blue" style="width:36px;height:36px;margin:0 auto 6px"><i data-lucide="${vendorTypeIcon(v.profile?.type, v.category)}"></i></div>
  <div class="vendor-name-wrap">${v.name}</div>
  <div class="text-muted text-xs">${v.location}</div>
  </th>
@@ -738,7 +755,7 @@ function renderComparisonTable(vendors, plan) {
  <div class="accordion">
  <div class="accordion-header" onclick="toggleAccordion(this)">
  <div class="accordion-header-left">
- <span style="font-size:1.1rem">${v.image}</span>
+ <span class="vendor-logo-tile tile-blue" style="width:32px;height:32px"><i data-lucide="${vendorTypeIcon(v.profile?.type, v.category)}"></i></span>
  <div>
  <div class="accordion-title">${v.name} - Details</div>
  <div class="accordion-meta">Why recommended - Risks - Questions to ask</div>
