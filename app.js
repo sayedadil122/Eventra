@@ -41,12 +41,14 @@ function navigateTo(route) {
 
 function startPlanning(eventType) {
  State.form.type = eventType;
- const sel = document.getElementById('event-type');
- if (sel) {
- if (eventType.includes('Wedding')) sel.value = 'Wedding / Engagement';
- else if (eventType.includes('Birthday')) sel.value = 'Birthday Party';
- else if (eventType.includes('Corporate')) sel.value = 'Corporate Event';
- }
+ const sel = document.getElementById('f-type');
+ if (sel) sel.value = eventType.includes('Wedding') ? 'Wedding'
+ : eventType.includes('Engagement') ? 'Engagement'
+ : eventType.includes('Birthday') ? 'Birthday'
+ : eventType.includes('Corporate') ? 'Corporate'
+ : eventType.includes('Anniversary') ? 'Anniversary'
+ : eventType.includes('Social') ? 'Social'
+ : sel.value;
  navigateTo('setup');
 }
 
@@ -147,11 +149,13 @@ function syncFormFromInputs() {
  const city = document.getElementById('f-city')?.value || State.form.city || 'Mumbai';
  const guests = parseIntegerInput(document.getElementById('f-guests')?.value, State.form.guests || 150);
  const budget = parseBudgetInput(document.getElementById('f-budget')?.value, State.form.budget || 800000);
- const functions = parseIntegerInput(document.getElementById('f-functions')?.value, State.form.functions || 1);
+ const itinerarySelect = document.getElementById('f-functions');
+ const functions = parseIntegerInput(itinerarySelect?.value, State.form.functions || 1);
+ const itinerary = itinerarySelect?.selectedOptions?.[0]?.textContent || State.form.itinerary || 'Reception Only';
  const style = document.getElementById('f-style')?.value || State.form.style || 'Elegant & Minimal';
  const services = [...document.querySelectorAll('#services-pills .pill.active')].map(p => p.dataset.service).filter(Boolean);
  const priorities = [...document.querySelectorAll('#priority-pills .pill.active')].map(p => p.dataset.priority).filter(Boolean);
- State.form = { type, date, city, guests, budget, functions, style, services, priorities };
+ State.form = { type, date, city, guests, budget, functions, itinerary, style, services, priorities };
  return State.form;
 }
 
@@ -221,12 +225,12 @@ function buildDynamicInsight(form, score, gap, categories, hiddenReserve) {
  const highRisk = categories.filter(c => c.risk === 'High').map(c => c.name);
  const priorityText = form.priorities?.length ? ` Protect ${form.priorities.join(', ')} while negotiating.` : '';
  if (score === 'Realistic') {
- return `Your ${formatINRFull(form.budget)} budget for ${form.guests} guests in ${form.city} is realistic for the selected services. Keep ${formatINRFull(hiddenReserve)} aside for GST, transport, overtime, and service charges.${priorityText}`;
+ return `Your ${formatINRFull(form.budget)} budget for a ${form.type} (${form.itinerary}) with ${form.guests} guests in ${form.city} is realistic for the selected services. Keep ${formatINRFull(hiddenReserve)} aside for GST, transport, overtime, and service charges.${priorityText}`;
  }
  if (score === 'Stretch') {
- return `Your ${formatINRFull(form.budget)} budget for ${form.guests} guests in ${form.city} can work, but it is tight. Watch ${highRisk.join(', ') || 'vendor add-ons'} first and keep ${formatINRFull(hiddenReserve)} for hidden charges.${priorityText}`;
+ return `Your ${formatINRFull(form.budget)} budget for a ${form.type} (${form.itinerary}) with ${form.guests} guests in ${form.city} can work, but it is tight. Watch ${highRisk.join(', ') || 'vendor add-ons'} first and keep ${formatINRFull(hiddenReserve)} for hidden charges.${priorityText}`;
  }
- return `Your ${formatINRFull(form.budget)} budget is short by about ${formatINRFull(Math.abs(gap))} for ${form.guests} guests in ${form.city}. Reduce guest count, simplify high-risk categories, or raise the budget before booking vendors.`;
+ return `Your ${formatINRFull(form.budget)} budget is short by about ${formatINRFull(Math.abs(gap))} for a ${form.type} (${form.itinerary}) with ${form.guests} guests in ${form.city}. Reduce guest count, simplify high-risk categories, or raise the budget before booking vendors.`;
 }
 
 function calculateVendorTrueCost(vendor, guests = State.form.guests || 150) {
@@ -335,7 +339,7 @@ function renderFeasibility() {
  const plan = buildBudgetPlan();
  const cats = plan.categories;
  const headerText = document.querySelector('#screen-feasibility .page-header p');
- if (headerText) headerText.textContent = `Is your ${formatINRFull(plan.budget)} budget realistic for ${plan.guests} guests in ${plan.city}?`;
+ if (headerText) headerText.textContent = `Is your ${formatINRFull(plan.budget)} budget realistic for a ${plan.type} in ${plan.city} with ${plan.guests} guests?`;
  const ring = document.getElementById('feas-ring');
  if (ring) {
  const circumference = 408.41;
@@ -1316,7 +1320,7 @@ function renderQuestions(cat) {
 function copyAllQuestions(cat, vendorName) {
  const questions = EVENTRA.questions[cat] || [];
  const plan = buildBudgetPlan();
- const eventType = plan.eventType || 'event';
+ const eventType = plan.type || 'event';
  const city = plan.city || 'my city';
  const dateText = plan.date ? ` on ${plan.date}` : '';
  const text = `Hi, I'm planning a ${eventType} in ${city}${dateText} (${plan.guests} guests). Before we proceed, could you please clarify a few things:\n\n` +
