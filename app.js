@@ -50,11 +50,13 @@ function startPlanning(eventType) {
  : eventType.includes('Social') ? 'Social'
  : sel.value;
  updateItineraryOptions();
+ updateSetupProgress(1);
  navigateTo('setup');
 }
 
 function onRouteEnter(route) {
  if (route === 'home') renderHome();
+ if (route === 'setup') updateSetupProgress(1);
  if (route === 'discovery') renderDiscovery();
  if (route === 'directory') renderDirectory('all');
  if (route === 'feasibility') renderFeasibility();
@@ -1457,14 +1459,13 @@ function setupNext(step) {
  }
  document.getElementById(`setup-step-${step}`).classList.add('hidden');
  document.getElementById(`setup-step-${step+1}`).classList.remove('hidden');
- markStepDone(step);
- markStepActive(step+1);
+ updateSetupProgress(step + 1);
 }
 
 function setupBack(step) {
  document.getElementById(`setup-step-${step}`).classList.add('hidden');
  document.getElementById(`setup-step-${step-1}`).classList.remove('hidden');
- markStepActive(step-1);
+ updateSetupProgress(step - 1);
 }
 
 function setupSubmit() {
@@ -1475,20 +1476,22 @@ function setupSubmit() {
  }
  document.getElementById('priority-error').classList.add('hidden');
  syncFormFromInputs();
+ updateSetupProgress(5);
  showToast('Event setup complete! Analysing your budget...');
  setTimeout(() => navigateTo('feasibility'), 1200);
 }
 
-function markStepDone(step) {
+function updateSetupProgress(currentStep) {
+ for (let step = 1; step <= 4; step += 1) {
  const node = document.getElementById(`snode-${step}`);
  const line = document.getElementById(`sline-${step}`);
- if (node) { node.classList.remove('active'); node.classList.add('done'); node.textContent = 'OK'; }
- if (line) line.classList.add('done');
-}
-
-function markStepActive(step) {
- const node = document.getElementById(`snode-${step}`);
- if (node) node.classList.add('active');
+ if (node) {
+ node.classList.toggle('done', step < currentStep);
+ node.classList.toggle('active', step === currentStep && currentStep <= 4);
+ node.textContent = step < currentStep ? 'OK' : String(step);
+ }
+ if (line) line.classList.toggle('done', step < currentStep);
+ }
 }
 
 function togglePill(el) {
