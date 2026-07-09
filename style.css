@@ -337,6 +337,9 @@ tr:hover td{background:rgba(0,0,0,0.015)}
 }
 .vendor-col-header{text-align:center;padding:16px}
 .vendor-name-wrap{font-weight:700;font-size:.95rem;margin-bottom:4px}
+.comparison-icon{width:18px;height:18px}
+.comparison-icon.good{color:var(--green)}
+.comparison-icon.bad{color:var(--red)}
 .match-score-circle{
   width:52px;height:52px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;

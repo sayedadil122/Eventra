@@ -232,9 +232,15 @@
  <div class="form-hint" id="budget-hint">Rs.8,00,000</div>
  </div>
  <div class="form-group">
- <label class="form-label">Number of Functions</label>
- <input type="number" class="form-input" id="f-functions" value="1" min="1" max="10" placeholder="e.g. 1">
- <div class="form-hint">e.g. 1 for engagement, 3 for wedding (mehendi + sangeet + reception)</div>
+ <label class="form-label">Functions / Event Days</label>
+ <select class="form-input form-select" id="f-functions">
+ <option value="1">1 function - single event</option>
+ <option value="2">2 functions - two event moments</option>
+ <option value="3">3 functions - mehendi, sangeet, reception</option>
+ <option value="4">4 functions - full wedding plan</option>
+ <option value="5">5+ functions - extended celebration</option>
+ </select>
+ <div class="form-hint">Select the closest option so cost estimates scale correctly.</div>
  </div>
  <div class="flex gap-3 mt-4">
  <button class="btn btn-ghost flex-1" onclick="setupBack(2)">Back</button>
@@ -409,10 +415,10 @@
  </div>
  <div class="page-body">
  <div class="tab-bar" id="vendor-tabs">
-  <div class="tab active" onclick="selectVendorTab('photography',this)">Photography (3)</div>
- <div class="tab" onclick="selectVendorTab('venue',this)">Venue (1)</div>
- <div class="tab" onclick="selectVendorTab('catering',this)">Catering (1)</div>
- <div class="tab" onclick="selectVendorTab('decoration',this)">Decoration (1)</div>
+  <div class="tab active" onclick="selectVendorTab('Photography',this)">Photography</div>
+ <div class="tab" onclick="selectVendorTab('Venue',this)">Venue</div>
+ <div class="tab" onclick="selectVendorTab('Catering',this)">Catering</div>
+ <div class="tab" onclick="selectVendorTab('Decoration',this)">Decoration</div>
  </div>
  <div id="vendor-content"></div>
  </div>

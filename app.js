@@ -15,7 +15,7 @@ const State = {
  style: 'Elegant & Minimal'
  },
  activeQuoteTab: 'photography',
- activeVendorTab: 'photography',
+ activeVendorTab: 'Photography',
  activeQTab: 'Photography',
  simulated: false,
   chartInstance: null,
@@ -529,31 +529,137 @@ function selectVendorTab(cat, el) {
 function renderVendors(cat) {
  const el = document.getElementById('vendor-content');
  if (!el) return;
- const vendors = EVENTRA.vendors[cat] || [];
- if (!vendors.length) { el.innerHTML = emptyState('No vendors added for this category.'); return; }
+ const plan = buildBudgetPlan();
+ updateVendorTabLabels(plan);
+ const vendors = getComparisonVendors(cat, plan);
+ if (!vendors.length) { el.innerHTML = emptyState(`No ${cat.toLowerCase()} vendors available for ${plan.city} yet.`); return; }
 
  if (vendors.length === 1) {
  el.innerHTML = `
  <div class="card mb-4">
- ${renderVendorSingle(vendors[0])}
+ ${renderVendorSingle(vendors[0], plan)}
  </div>
  <div class="card card-primary">
  <div class="flex items-center gap-2">
  <i data-lucide="info" style="width:16px;color:var(--primary)"></i>
- <span class="text-sm font-semibold">Only 1 vendor in this category</span>
+ <span class="text-sm font-semibold">Only 1 verified ${cat.toLowerCase()} vendor for ${plan.city}</span>
  </div>
- <p class="text-sm text-secondary mt-2">Upload additional quotes to enable side-by-side comparison. Go to Quote Analysis to upload another vendor.</p>
- <button class="btn btn-outline btn-sm mt-3" onclick="navigateTo('quotes')">Add Another Quote</button>
+ <p class="text-sm text-secondary mt-2">Comparison is still calculated from your guest count, city, and budget target. More vendors can be added later.</p>
  </div>
  `;
+ lucide.createIcons();
  return;
  }
 
- // Multi-vendor comparison table (photography has 3)
- el.innerHTML = renderComparisonTable(vendors);
+ el.innerHTML = renderComparisonTable(vendors, plan);
+ lucide.createIcons();
 }
 
-function renderVendorSingle(v) {
+function updateVendorTabLabels(plan) {
+ document.querySelectorAll('#vendor-tabs .tab').forEach(tab => {
+ const match = tab.getAttribute('onclick')?.match(/'([^']+)'/);
+ const cat = match?.[1];
+ if (!cat) return;
+ const count = getComparisonVendors(cat, plan).length;
+ tab.textContent = `${cat} (${count})`;
+ });
+}
+
+function getComparisonVendors(category, plan) {
+ const selectedCity = String(plan.city || '').toLowerCase();
+ const cityMatches = v => selectedCity === 'other' || String(v.location || '').toLowerCase().includes(selectedCity);
+ const typeMatches = v => {
+ if (category === 'Venue') return v.type === 'Hotel' || v.type === 'Farmhouse';
+ if (category === 'Photography') return v.type === 'Photographer';
+ if (category === 'Decoration') return v.type === 'Decorator';
+ if (category === 'Catering') return v.type === 'Catering';
+ return false;
+ };
+ const profileVendors = EVENTRA.vendorProfiles
+ .filter(v => typeMatches(v) && cityMatches(v))
+ .map(v => normalizeProfileVendor(v, category, plan));
+ const fallback = category === 'Catering' ? buildCateringComparisons(plan) : [];
+ return (profileVendors.length ? profileVendors : fallback)
+ .map(v => ({ ...v, fit: vendorFit(v.profile, plan) }))
+ .sort((a, b) => b.fit.score - a.fit.score);
+}
+
+function normalizeProfileVendor(v, category, plan) {
+ const trueCost = calculateVendorTrueCost(v, plan.guests);
+ const target = targetForVendor(v, plan);
+ const ratio = trueCost / Math.max(1, target);
+ const included = defaultIncludedForType(v.type);
+ const excluded = defaultMissingForType(v.type);
+ return {
+ id: v.id,
+ name: v.name,
+ category,
+ location: v.location,
+ rating: v.rating,
+ reviews: v.reviews,
+ listedPrice: v.startingPrice,
+ quotedPrice: v.priceUnit === 'per plate' ? v.startingPrice * plan.guests : v.startingPrice,
+ estimatedFinalMin: trueCost,
+ estimatedFinalMax: Math.round(trueCost * 1.12),
+ matchScore: Math.max(1, Math.min(100, Math.round((Number(v.rating || 0) * 9) + (ratio <= 1 ? 45 : Math.max(5, 45 - (ratio - 1) * 45))))),
+ badge: ratio <= 1 ? 'Best Fit' : ratio <= 1.15 ? 'Negotiate Extras' : 'Over Target',
+ badgeColor: ratio <= 1 ? 'green' : ratio <= 1.15 ? 'amber' : 'red',
+ availability: true,
+ responseTime: 'Verify before booking',
+ included,
+ excluded,
+ whyRecommended: `${v.name} is compared against your ${plan.city} ${category.toLowerCase()} target of ${formatINRFull(target)} for ${plan.guests} guests. Estimated all-in cost is ${formatINRFull(trueCost)}.`,
+ risks: excluded.map(item => `${item} must be confirmed in writing before paying advance`),
+ questions: vendorQuestionsForType(v.type, plan),
+ confidence: ratio <= 1 ? 'High' : ratio <= 1.15 ? 'Medium' : 'Low',
+ profile: v
+ };
+}
+
+function buildCateringComparisons(plan) {
+ const cityRate = { Mumbai:1400, Delhi:1500, Bangalore:1350, Hyderabad:1150, Chennai:1100, Pune:1200, Other:1150 }[plan.city] || 1200;
+ const names = {
+ Mumbai:['FeastCraft Catering','Urban Rasoi Events','Royal Platter Co.'],
+ Delhi:['Delhi Zaika Caterers','Royal Rasoi NCR','Saffron Plate Delhi'],
+ Bangalore:['Bengaluru Feast Co.','Namma Caterers','Urban Thali Bangalore'],
+ Hyderabad:['Deccan Feast Caterers','Hyderabad Royal Kitchen','Pearl City Caterers'],
+ Chennai:['Chennai Virundhu Caterers','Madras Menu Co.','South Feast Chennai'],
+ Pune:['Pune Platter Co.','Saffron Pune Caterers','Banquet Bites Pune'],
+ Other:['Regional Caterer A','Regional Caterer B','Regional Caterer C']
+ }[plan.city] || ['Regional Caterer A','Regional Caterer B','Regional Caterer C'];
+ return names.map((name, index) => {
+ const rate = Math.round(cityRate * (0.9 + index * 0.12));
+ const profile = { id:`cat-${plan.city}-${index}`, type:'Catering', name, location:plan.city, rating:4.2 + index * 0.15, reviews:120 + index * 55, startingPrice:rate, priceUnit:'per plate', description:'Catering comparison generated from selected city and guest count.' };
+ return normalizeProfileVendor(profile, 'Catering', plan);
+ });
+}
+
+function defaultIncludedForType(type) {
+ if (type === 'Catering') return ['Core menu package','Serving staff estimate','Basic crockery'];
+ if (type === 'Photographer') return ['Event coverage','Edited digital photos','Online delivery'];
+ if (type === 'Decorator') return ['Core stage setup','Basic floral/decor elements','Installation planning'];
+ return ['Venue space','Basic seating/furniture','Standard event support'];
+}
+
+function defaultMissingForType(type) {
+ if (type === 'Catering') return ['GST','Vendor meals','Extra plates','Transport','Overtime'];
+ if (type === 'Photographer') return ['GST','Travel','Album','Drone','Overtime'];
+ if (type === 'Decorator') return ['GST','Transport','Setup labour','Teardown','Extra flowers'];
+ return ['GST','Service charge','Security deposit','Outside vendor fee','Extra hours'];
+}
+
+function vendorQuestionsForType(type, plan) {
+ const base = {
+ Catering: [`Is GST included in the per-plate rate for ${plan.guests} guests?`, 'Are vendor meals and transport included?', 'What is the extra plate cost if guest count increases?'],
+ Photographer: ['Is GST included in the package?', `Is travel within ${plan.city} included?`, 'What is the overtime rate after contracted hours?'],
+ Decorator: ['Is setup labour included?', 'Is teardown included after the event?', `Is transport within ${plan.city} included?`],
+ Hotel: ['Is GST and service charge included?', 'Is security deposit refundable?', 'Are outside vendors allowed and charged separately?'],
+ Farmhouse: ['Is generator, security, and cleanup included?', 'What is the overtime charge?', 'Are outside vendors allowed?']
+ };
+ return base[type] || base.Hotel;
+}
+
+function renderVendorSingle(v, plan) {
  const scoreClass = v.matchScore >= 75 ? 'score-green' : v.matchScore >= 60 ? 'score-amber' : 'score-red';
  return `
  <div class="flex items-center justify-between mb-4">
@@ -592,22 +698,23 @@ function renderVendorSingle(v) {
  `;
 }
 
-function renderComparisonTable(vendors) {
+function renderComparisonTable(vendors, plan) {
  const scoreClass = s => s >= 75 ? 'score-green' : s >= 60 ? 'score-amber' : 'score-red';
  const badgeClass = b => ({ green:'badge-green', amber:'badge-amber', red:'badge-red', violet:'badge-violet' }[b] || 'badge-grey');
- const avail = v => v.availability ? `<span class="badge badge-green">OK Available</span>` : `<span class="badge badge-red">Unconfirmed</span>`;
- const bool = v => v ? `<span style="color:var(--green)">OK</span>` : `<span style="color:var(--red)">No</span>`;
+ const avail = v => v.availability ? `<span class="badge badge-green">Available to verify</span>` : `<span class="badge badge-red">Unconfirmed</span>`;
+ const status = v => v ? `<i data-lucide="check-circle-2" class="comparison-icon good"></i>` : `<i data-lucide="x-circle" class="comparison-icon bad"></i>`;
 
  const rows = [
  { label:'Match Score', render: v => `<div class="match-score-circle ${scoreClass(v.matchScore)}" style="margin:0 auto">${v.matchScore}</div>` },
  { label:'Badge', render: v => `<span class="badge ${badgeClass(v.badgeColor)}">${v.badge}</span>` },
- { label:'Listed Price', render: v => `<span style="text-decoration:line-through;color:var(--text-3)">${formatINRFull(v.listedPrice)}</span>` },
- { label:'Quoted Price', render: v => `<b>${formatINRFull(v.quotedPrice)}</b>` },
+ { label:`Target for ${plan.guests} guests`, render: v => `<b>${formatINRFull(v.fit.target)}</b>` },
+ { label:'Listed/Base Price', render: v => `<span style="color:var(--text-3)">${formatINRFull(v.listedPrice)}</span>` },
+ { label:'Working Quote', render: v => `<b>${formatINRFull(v.quotedPrice)}</b>` },
  { label:'Est. Final Cost', render: v => `<b style="color:var(--amber)">${formatINRFull(v.estimatedFinalMin)}-${formatINRFull(v.estimatedFinalMax)}</b>` },
  { label:'Availability', render: v => avail(v) },
  { label:'Response Time', render: v => `<span class="text-sm">${v.responseTime}</span>` },
- { label:'GST Included', render: v => bool(v.included.some(i => i.toLowerCase().includes('gst'))) },
- { label:'Album Included', render: v => bool(v.included.some(i => i.toLowerCase().includes('album'))) },
+ { label:'GST Clear', render: v => status(v.included.some(i => i.toLowerCase().includes('gst'))) },
+ { label:'Key Add-ons Clear', render: v => status(v.excluded.length <= 2) },
  { label:'Confidence', render: v => `<span class="badge badge-${v.confidence==='High'?'green':v.confidence==='Medium'?'amber':'red'}">${v.confidence}</span>` },
  ];
 
