@@ -49,6 +49,7 @@ function startPlanning(eventType) {
  : eventType.includes('Anniversary') ? 'Anniversary'
  : eventType.includes('Social') ? 'Social'
  : sel.value;
+ updateItineraryOptions();
  navigateTo('setup');
 }
 
@@ -150,13 +151,114 @@ function syncFormFromInputs() {
  const guests = parseIntegerInput(document.getElementById('f-guests')?.value, State.form.guests || 150);
  const budget = parseBudgetInput(document.getElementById('f-budget')?.value, State.form.budget || 800000);
  const itinerarySelect = document.getElementById('f-functions');
- const functions = parseIntegerInput(itinerarySelect?.value, State.form.functions || 1);
- const itinerary = itinerarySelect?.selectedOptions?.[0]?.textContent || State.form.itinerary || 'Reception Only';
+ const customItinerary = document.getElementById('f-itinerary-custom')?.value?.trim() || '';
+ const selectedItinerary = itinerarySelect?.selectedOptions?.[0]?.textContent || State.form.itinerary || 'Reception Only';
+ const itinerary = itinerarySelect?.value === 'custom' && customItinerary ? customItinerary : selectedItinerary;
+ const functions = itinerarySelect?.value === 'custom'
+ ? inferItineraryCount(customItinerary, State.form.functions || 1)
+ : parseIntegerInput(itinerarySelect?.value, State.form.functions || 1);
  const style = document.getElementById('f-style')?.value || State.form.style || 'Elegant & Minimal';
  const services = [...document.querySelectorAll('#services-pills .pill.active')].map(p => p.dataset.service).filter(Boolean);
  const priorities = [...document.querySelectorAll('#priority-pills .pill.active')].map(p => p.dataset.priority).filter(Boolean);
  State.form = { type, date, city, guests, budget, functions, itinerary, style, services, priorities };
  return State.form;
+}
+
+function inferItineraryCount(text, fallback = 1) {
+ if (!text) return fallback;
+ const parts = text.split(/\s*(?:\+|,|\/|&|\band\b)\s*/i).map(p => p.trim()).filter(Boolean);
+ return Math.max(1, Math.min(8, parts.length || fallback));
+}
+
+function itineraryConfig(type) {
+ const configs = {
+ Wedding: {
+ label: 'Wedding Itinerary',
+ hint: 'Choose the closest wedding flow so vendor and budget estimates scale correctly.',
+ options: [
+ ['1', 'Reception Only'],
+ ['2', 'Haldi + Wedding'],
+ ['3', 'Haldi + Mehendi + Wedding'],
+ ['4', 'Haldi + Mehendi + Sangeet + Wedding'],
+ ['custom', 'Custom']
+ ]
+ },
+ Engagement: {
+ label: 'Engagement Itinerary',
+ hint: 'Choose the closest engagement flow for food, decor, photography, and venue planning.',
+ options: [
+ ['1', 'Engagement Only'],
+ ['2', 'Engagement + Dinner'],
+ ['3', 'Engagement + Mehendi + Dinner'],
+ ['custom', 'Custom']
+ ]
+ },
+ Birthday: {
+ label: 'Birthday Itinerary',
+ hint: 'Choose the closest birthday flow so entertainment, food, and decor estimates fit the event.',
+ options: [
+ ['1', 'Birthday Party Only'],
+ ['2', 'Cake Cutting + Dinner'],
+ ['3', 'Games + Cake Cutting + Dinner'],
+ ['4', 'Theme Party + Games + Dinner'],
+ ['custom', 'Custom']
+ ]
+ },
+ Corporate: {
+ label: 'Corporate Itinerary',
+ hint: 'Choose the closest corporate flow for venue, AV, catering, and logistics estimates.',
+ options: [
+ ['1', 'Conference Only'],
+ ['2', 'Conference + Networking'],
+ ['3', 'Conference + Lunch + Networking'],
+ ['4', 'Conference + Dinner + Entertainment'],
+ ['custom', 'Custom']
+ ]
+ },
+ Anniversary: {
+ label: 'Anniversary Itinerary',
+ hint: 'Choose the closest anniversary flow for food, decor, and entertainment planning.',
+ options: [
+ ['1', 'Dinner Only'],
+ ['2', 'Ceremony + Dinner'],
+ ['3', 'Ceremony + Entertainment + Dinner'],
+ ['custom', 'Custom']
+ ]
+ },
+ Social: {
+ label: 'Event Itinerary',
+ hint: 'Choose the closest event flow so vendor and budget estimates scale correctly.',
+ options: [
+ ['1', 'Main Event Only'],
+ ['2', 'Main Event + Meal'],
+ ['3', 'Welcome + Main Event + Meal'],
+ ['custom', 'Custom']
+ ]
+ }
+ };
+ return configs[type] || configs.Social;
+}
+
+function updateItineraryOptions() {
+ const type = document.getElementById('f-type')?.value || State.form.type || 'Engagement';
+ const select = document.getElementById('f-functions');
+ const label = document.getElementById('itinerary-label');
+ const hint = select?.parentElement?.querySelector('.form-hint');
+ if (!select) return;
+ const config = itineraryConfig(type);
+ if (label) label.textContent = config.label;
+ select.innerHTML = config.options.map(([value, text]) => `<option value="${value}">${text}</option>`).join('');
+ if (hint) hint.textContent = config.hint;
+ toggleCustomItinerary();
+}
+
+function toggleCustomItinerary() {
+ const select = document.getElementById('f-functions');
+ const custom = document.getElementById('f-itinerary-custom');
+ if (!custom || !select) return;
+ const isCustom = select.value === 'custom';
+ custom.classList.toggle('hidden', !isCustom);
+ if (isCustom) custom.focus();
 }
 
 function buildBudgetPlan() {
@@ -1342,6 +1444,10 @@ function setupNext(step) {
  const b = parseBudgetInput(document.getElementById('f-budget').value, 0);
  if (!g || g < 10 || g > 5000) { alert('Guest count must be between 10 and 5,000'); return; }
  if (!b || b < 10000) { alert('Please enter a valid budget (minimum Rs.10,000)'); return; }
+ if (document.getElementById('f-functions')?.value === 'custom' && !document.getElementById('f-itinerary-custom')?.value.trim()) {
+ alert('Please type your custom event itinerary');
+ return;
+ }
  syncFormFromInputs();
  }
  if (step === 3) {
@@ -1403,6 +1509,7 @@ function togglePriority(el) {
 
 // Budget input format hint
 document.addEventListener('DOMContentLoaded', () => {
+ updateItineraryOptions();
  const budgetInput = document.getElementById('f-budget');
  const budgetHint = document.getElementById('budget-hint');
  if (budgetInput && budgetHint) {

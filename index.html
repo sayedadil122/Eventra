@@ -185,7 +185,7 @@
  <p class="card-subtitle">What kind of event are you planning?</p>
  <div class="form-group">
  <label class="form-label">Event Type</label>
- <select class="form-input form-select" id="f-type">
+ <select class="form-input form-select" id="f-type" onchange="updateItineraryOptions()">
  <option value="">Select event type</option>
  <option value="Engagement" selected>Engagement</option>
  <option value="Wedding">Wedding</option>
@@ -232,14 +232,15 @@
  <div class="form-hint" id="budget-hint">Rs.8,00,000</div>
  </div>
  <div class="form-group">
- <label class="form-label">Wedding Itinerary</label>
- <select class="form-input form-select" id="f-functions">
+ <label class="form-label" id="itinerary-label">Wedding Itinerary</label>
+ <select class="form-input form-select" id="f-functions" onchange="toggleCustomItinerary()">
  <option value="1">Reception Only</option>
  <option value="2">Haldi + Wedding</option>
  <option value="3">Haldi + Mehendi + Wedding</option>
  <option value="4">Haldi + Mehendi + Sangeet + Wedding</option>
- <option value="5">Custom</option>
+ <option value="custom">Custom</option>
  </select>
+ <input type="text" class="form-input mt-2 hidden" id="f-itinerary-custom" placeholder="Type exact event flow, e.g. Haldi + Pool Party + Wedding + Reception">
  <div class="form-hint">Choose the closest itinerary so vendor and budget estimates scale correctly.</div>
  </div>
  <div class="flex gap-3 mt-4">
