@@ -124,13 +124,30 @@ function priorityLabel(p) {
  return { must:'Must Solve', should:'Should Solve', supporting:'Supporting', future:'Future V2', emotional:'Emotional Driver' }[p] || p;
 }
 
+function parseIntegerInput(value, fallback) {
+ const cleaned = String(value ?? '').replace(/[^\d]/g, '');
+ const parsed = parseInt(cleaned, 10);
+ return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseBudgetInput(value, fallback = 800000) {
+ const raw = String(value ?? '').trim().toLowerCase();
+ if (!raw) return fallback;
+ const numeric = parseFloat(raw.replace(/,/g, '').replace(/[^\d.]/g, ''));
+ if (!Number.isFinite(numeric)) return fallback;
+ if (raw.includes('lakh') || raw.includes('lac')) return Math.round(numeric * 100000);
+ if (raw.includes('cr') || raw.includes('crore')) return Math.round(numeric * 10000000);
+ if (numeric > 0 && numeric < 1000) return Math.round(numeric * 100000);
+ return Math.round(numeric);
+}
+
 function syncFormFromInputs() {
  const type = document.getElementById('f-type')?.value || State.form.type || 'Engagement';
  const date = document.getElementById('f-date')?.value || State.form.date || '2026-12-18';
  const city = document.getElementById('f-city')?.value || State.form.city || 'Mumbai';
- const guests = parseInt(document.getElementById('f-guests')?.value || State.form.guests || 150, 10);
- const budget = parseInt(document.getElementById('f-budget')?.value || State.form.budget || 800000, 10);
- const functions = parseInt(document.getElementById('f-functions')?.value || State.form.functions || 1, 10);
+ const guests = parseIntegerInput(document.getElementById('f-guests')?.value, State.form.guests || 150);
+ const budget = parseBudgetInput(document.getElementById('f-budget')?.value, State.form.budget || 800000);
+ const functions = parseIntegerInput(document.getElementById('f-functions')?.value, State.form.functions || 1);
  const style = document.getElementById('f-style')?.value || State.form.style || 'Elegant & Minimal';
  const services = [...document.querySelectorAll('#services-pills .pill.active')].map(p => p.dataset.service).filter(Boolean);
  const priorities = [...document.querySelectorAll('#priority-pills .pill.active')].map(p => p.dataset.priority).filter(Boolean);
@@ -258,7 +275,7 @@ function renderDirectory(filterType = currentDirectoryTab) {
  const selectedCity = String(plan.city || '').toLowerCase();
  const vendors = EVENTRA.vendorProfiles
  .filter(v => filterType === 'all' || v.type === filterType)
- .filter(v => String(v.location || '').toLowerCase().includes(selectedCity))
+ .filter(v => selectedCity === 'other' || String(v.location || '').toLowerCase().includes(selectedCity))
  .map(v => ({ ...v, fit: vendorFit(v, plan) }))
  .sort((a, b) => b.fit.score - a.fit.score);
  if (!vendors.length) {
@@ -425,11 +442,12 @@ function renderQuotes(cat) {
  const vendors = EVENTRA.vendors[cat] || [];
  if (!vendors.length) { el.innerHTML = emptyState('No quotes uploaded for this category yet.'); return; }
  el.innerHTML = vendors.map(v => renderQuoteCard(v)).join('');
+ lucide.createIcons();
 }
 
 function renderQuoteCard(v) {
- const included = v.included.map(i => `<div class="flex items-center gap-2 text-sm py-1"><span style="color:var(--green);font-size:1rem">OK</span>${i}</div>`).join('');
- const missing = v.excluded.map(i => `<div class="flex items-center gap-2 text-sm py-1"><span style="color:var(--amber);font-size:1rem">Warning</span>${i}</div>`).join('');
+ const included = v.included.map(i => `<div class="quote-status quote-status-good"><i data-lucide="check-circle-2"></i><span>${i}</span></div>`).join('');
+ const missing = v.excluded.map(i => `<div class="quote-status quote-status-warn"><i data-lucide="alert-triangle"></i><span>${i}</span></div>`).join('');
  const confColor = { High:'green', Medium:'amber', Low:'red' }[v.confidence] || 'grey';
  return `
  <div class="card mb-4">
@@ -468,11 +486,11 @@ function renderQuoteCard(v) {
  <!-- Included vs Missing -->
  <div class="grid-2 gap-4 mb-4">
  <div>
- <div class="font-semibold text-sm mb-2" style="color:var(--green)">OK Included in Quote</div>
+ <div class="font-semibold text-sm mb-2" style="color:var(--green)">Included in Quote</div>
  ${included}
  </div>
  <div>
- <div class="font-semibold text-sm mb-2" style="color:var(--amber)">Warning Likely Missing</div>
+ <div class="font-semibold text-sm mb-2" style="color:var(--amber)">Likely Missing</div>
  ${missing}
  <div class="mt-2 text-sm" style="color:var(--red);font-weight:600">Hidden estimate: ${v.hiddenEstimate || (formatINRFull(v.estimatedFinalMin - v.quotedPrice) + '-' + formatINRFull(v.estimatedFinalMax - v.quotedPrice))}</div>
  </div>
@@ -951,6 +969,8 @@ function renderRecoveryOptions(totalDelta) {
 // """ TRADE-OFF ADVISOR """""""""""""""""""""""""""""""""""""""
 function renderTradeoff() {
  const plan = buildBudgetPlan();
+ const protectedPriorities = [...document.querySelectorAll('#tradeoff-priorities .pill.active')]
+ .map(p => p.dataset.pri || p.textContent.replace(' Locked', '').trim());
  const bannerTitle = document.querySelector('#screen-tradeoff .tradeoff-banner h3');
  const bannerCopy = document.querySelector('#screen-tradeoff .tradeoff-banner p');
  if (bannerTitle) {
@@ -965,9 +985,10 @@ function renderTradeoff() {
  }
  const el = document.getElementById('tradeoff-scenarios');
  if (!el) return;
- el.innerHTML = EVENTRA.tradeoff.scenarios.map((s, idx) => {
- const adjustedSaving = Math.max(s.saving, plan.gap < 0 ? Math.ceil(Math.abs(plan.gap) * (0.75 + idx * 0.12)) : Math.round(plan.budget * (0.03 + idx * 0.015)));
- const adjustedTotal = Math.max(0, plan.estimatedMinCost - adjustedSaving);
+ const scenarios = buildTradeoffScenarios(plan, protectedPriorities);
+ el.innerHTML = scenarios.map((s, idx) => {
+ const adjustedSaving = s.saving;
+ const adjustedTotal = s.resultingTotal;
  const isWithinBudget = adjustedTotal <= plan.budget;
  const impactBars = (label, impact) => {
  const levels = { None:5, Low:4, Medium:3, High:1 };
@@ -982,12 +1003,12 @@ function renderTradeoff() {
  const changes = s.changes.map(c => `
  <li>
  <span>${c.category}: ${c.change}</span>
- <span class="change-saving">-Rs.${c.saving.toLocaleString('en-IN')}</span>
+ <span class="change-saving">-${formatINRFull(c.saving)}</span>
  </li>
  `).join('');
 
  const withinBadge = isWithinBudget
- ? `<span class="badge badge-green" style="font-size:.8rem;padding:5px 12px">OK Exactly within budget</span>`
+ ? `<span class="badge badge-green" style="font-size:.8rem;padding:5px 12px">Within budget</span>`
  : '';
 
  const vendorTrust = s.vendorTrustInfo ? `
@@ -1023,8 +1044,6 @@ function renderTradeoff() {
  <h4 class="font-semibold text-sm mb-2 mt-4">Recommended Changes</h4>
  <ul class="scenario-changes">${changes}</ul>
  
- ${vendorTrust}
- 
  <div class="divider" style="margin: 16px 0;"></div>
  <h4 class="font-semibold text-sm mb-2">Impact Assessment</h4>
  ${impactBars('Experience', s.experienceImpact)}
@@ -1037,6 +1056,76 @@ function renderTradeoff() {
  </div>
  `;
  }).join('');
+ lucide.createIcons();
+}
+
+function buildTradeoffScenarios(plan, protectedPriorities = []) {
+ const gap = Math.max(0, Math.abs(Math.min(0, plan.gap)));
+ const need = gap || Math.round(plan.budget * 0.05);
+ const protectedSet = new Set(protectedPriorities);
+ const canTouch = category => {
+ const normalized = category === 'Decoration' ? 'Decor' : category;
+ if (protectedSet.has(normalized)) return false;
+ if (category === 'Catering' && (protectedSet.has('Food Quality') || protectedSet.has('Guest Experience'))) return false;
+ if (category === 'Venue' && protectedSet.has('Guest Experience')) return false;
+ if (category === 'Photography' && protectedSet.has('Photography')) return false;
+ return category !== 'Contingency';
+ };
+ const adjustable = plan.categories
+ .filter(c => canTouch(c.name))
+ .sort((a, b) => (b.recommended - b.allocation) - (a.recommended - a.allocation));
+ const fallback = plan.categories.filter(c => c.name !== 'Contingency');
+
+ const scenarioFrom = (title, chip, factor, impact, note) => {
+ const pool = adjustable.length ? adjustable : fallback;
+ const changes = [];
+ let saved = 0;
+ for (const cat of pool) {
+ if (saved >= need * factor) break;
+ const maxCut = Math.max(Math.round(cat.recommended * 0.08), Math.round(cat.recommended - cat.allocation));
+ const saving = Math.max(3000, Math.min(maxCut, Math.round((need * factor - saved) * 0.75)));
+ if (saving <= 0) continue;
+ const action = tradeoffAction(cat.name, saving);
+ changes.push({ category: cat.name, change: action, saving });
+ saved += saving;
+ }
+ if (!changes.length) {
+ const saving = Math.round(need * factor);
+ changes.push({ category:'Vendor Negotiation', change:'Ask every shortlisted vendor for an all-inclusive written package and remove optional add-ons', saving });
+ saved = saving;
+ }
+ return {
+ title,
+ chip,
+ saving: saved,
+ resultingTotal: Math.max(0, plan.estimatedMinCost - saved),
+ changes,
+ experienceImpact: impact.experience,
+ qualityImpact: impact.quality,
+ convenienceImpact: impact.convenience,
+ guestNote: note
+ };
+ };
+
+ return [
+ scenarioFrom('Low-Risk Negotiation', 'Best First Step', 0.7, { experience:'Low', quality:'Low', convenience:'Low' }, 'Start here before cutting guest experience. This focuses on quote cleanup, GST clarity, and removing extras.'),
+ scenarioFrom('Balanced Scope Reset', 'Recommended', 1, { experience:'Medium', quality:'Low', convenience:'Low' }, 'This is the most practical path when the current plan is over budget and priority categories must stay protected.'),
+ scenarioFrom('Strong Recovery Plan', 'Maximum Saving', 1.25, { experience:'Medium', quality:'Medium', convenience:'Medium' }, 'Use this only if vendors quote above target or the budget gap remains after negotiation.')
+ ];
+}
+
+function tradeoffAction(category, saving) {
+ const amount = formatINRFull(saving);
+ const actions = {
+ Venue: `Negotiate minimum billing, remove non-essential hall add-ons, and cap service charge impact by about ${amount}`,
+ Catering: `Reduce premium counters or beverage add-ons without changing the core menu, saving about ${amount}`,
+ Decoration: `Use focused stage and entry decor instead of full-area styling, saving about ${amount}`,
+ Photography: `Keep core coverage and remove album, drone, or express delivery add-ons, saving about ${amount}`,
+ Makeup: `Limit package to primary people and remove optional trials/add-ons, saving about ${amount}`,
+ Entertainment: `Shift to a shorter performance slot or curated playlist, saving about ${amount}`,
+ Logistics: `Use local vendors and combine transport/setup trips, saving about ${amount}`
+ };
+ return actions[category] || `Negotiate this category down by about ${amount}`;
 }
 
 function toggleTOPri(el) {
@@ -1044,6 +1133,7 @@ function toggleTOPri(el) {
   const isProtected = el.classList.contains('active');
   const priName = el.dataset.pri || el.textContent.replace(' Locked', '').trim();
   el.textContent = isProtected ? priName + ' Locked' : priName;
+  renderTradeoff();
 }
 
 // """ VENDOR QUESTIONS """"""""""""""""""""""""""""""""""""""""
@@ -1121,7 +1211,7 @@ function setupNext(step) {
  }
  if (step === 2) {
  const g = parseInt(document.getElementById('f-guests').value);
- const b = parseInt(document.getElementById('f-budget').value);
+ const b = parseBudgetInput(document.getElementById('f-budget').value, 0);
  if (!g || g < 10 || g > 5000) { alert('Guest count must be between 10 and 5,000'); return; }
  if (!b || b < 10000) { alert('Please enter a valid budget (minimum Rs.10,000)'); return; }
  syncFormFromInputs();
@@ -1189,7 +1279,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const budgetHint = document.getElementById('budget-hint');
  if (budgetInput && budgetHint) {
  budgetInput.addEventListener('input', () => {
- const val = parseInt(budgetInput.value);
+ const val = parseBudgetInput(budgetInput.value, 0);
  if (!isNaN(val)) budgetHint.textContent = formatINRFull(val);
  });
  }
