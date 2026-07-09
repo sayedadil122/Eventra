@@ -18,6 +18,7 @@ const State = {
  activeVendorTab: 'Photography',
  activeQTab: 'Photography',
  simulated: false,
+ auth: { user: null, token: localStorage.getItem('eventra_token') || '', mode: 'signup', pendingSave: false },
   chartInstance: null,
 };
 
@@ -1468,7 +1469,7 @@ function setupBack(step) {
  updateSetupProgress(step - 1);
 }
 
-function setupSubmit() {
+async function setupSubmit() {
  const activePriorities = document.querySelectorAll('#priority-pills .pill.active');
  if (activePriorities.length !== 3) {
  document.getElementById('priority-error').classList.remove('hidden');
@@ -1477,8 +1478,13 @@ function setupSubmit() {
  document.getElementById('priority-error').classList.add('hidden');
  syncFormFromInputs();
  updateSetupProgress(5);
- showToast('Event setup complete! Analysing your budget...');
- setTimeout(() => navigateTo('feasibility'), 1200);
+ if (State.auth.user) {
+ await saveCurrentEvent(false);
+ showToast('Analysing your budget...');
+ setTimeout(() => navigateTo('feasibility'), 900);
+ return;
+ }
+ openAuthModal('signup', true);
 }
 
 function updateSetupProgress(currentStep) {
@@ -1557,6 +1563,172 @@ function showToast(message) {
  setTimeout(() => t.classList.remove('show'), 3200);
 }
 
+// """ OPTIONAL AUTH / SAVE DATA """""""""""""""""""""""""""""""
+function authHeaders() {
+ return State.auth.token ? { Authorization: `Bearer ${State.auth.token}` } : {};
+}
+
+async function apiJson(path, options = {}) {
+ const res = await fetch(path, {
+ ...options,
+ headers: {
+ 'Content-Type': 'application/json',
+ ...(options.headers || {}),
+ ...authHeaders()
+ }
+ });
+ const data = await res.json().catch(() => ({}));
+ if (!res.ok) throw new Error(data.error || data.message || 'Request failed');
+ return data;
+}
+
+function openAuthModal(mode = 'signup', pendingSave = false) {
+ State.auth.pendingSave = pendingSave;
+ setAuthMode(mode);
+ const modal = document.getElementById('auth-modal');
+ if (modal) modal.classList.remove('hidden');
+ const title = document.getElementById('auth-modal-title');
+ const copy = document.getElementById('auth-modal-copy');
+ if (title) title.textContent = pendingSave ? 'Save this event plan' : 'Account access';
+ if (copy) copy.textContent = pendingSave
+ ? 'Sign up or login to save this event to your account. You can also continue with sample/session data.'
+ : 'Login or create an account when you want to save your event data.';
+ lucide.createIcons();
+}
+
+function closeAuthModal() {
+ const modal = document.getElementById('auth-modal');
+ if (modal) modal.classList.add('hidden');
+ hideAuthError();
+}
+
+function setAuthMode(mode) {
+ State.auth.mode = mode;
+ document.getElementById('auth-tab-signup')?.classList.toggle('active', mode === 'signup');
+ document.getElementById('auth-tab-login')?.classList.toggle('active', mode === 'login');
+ document.getElementById('auth-name-group')?.classList.toggle('hidden', mode === 'login');
+ const submit = document.getElementById('auth-submit');
+ if (submit) submit.textContent = mode === 'signup'
+ ? (State.auth.pendingSave ? 'Create account and save' : 'Create account')
+ : (State.auth.pendingSave ? 'Login and save' : 'Login');
+ hideAuthError();
+}
+
+function showAuthError(message) {
+ const el = document.getElementById('auth-error');
+ if (!el) return;
+ el.textContent = message;
+ el.classList.remove('hidden');
+}
+
+function hideAuthError() {
+ const el = document.getElementById('auth-error');
+ if (el) el.classList.add('hidden');
+}
+
+async function submitAuth() {
+ hideAuthError();
+ const mode = State.auth.mode;
+ const name = document.getElementById('auth-name')?.value.trim();
+ const email = document.getElementById('auth-email')?.value.trim();
+ const password = document.getElementById('auth-password')?.value || '';
+ if (mode === 'signup' && !name) return showAuthError('Please enter your name');
+ if (!email) return showAuthError('Please enter your email');
+ if (password.length < 6) return showAuthError('Password must be at least 6 characters');
+ try {
+ const payload = mode === 'signup' ? { name, email, password } : { email, password };
+ const data = await apiJson(`/api/auth/${mode}`, { method:'POST', body: JSON.stringify(payload), headers:{} });
+ State.auth.user = data.user;
+ State.auth.token = data.token;
+ localStorage.setItem('eventra_token', data.token);
+ updateAccountPanel();
+ if (State.auth.pendingSave) await saveCurrentEvent(false);
+ closeAuthModal();
+ showToast(State.auth.pendingSave ? 'Account ready. Event saved.' : 'Logged in successfully');
+ if (State.auth.pendingSave) navigateTo('feasibility');
+ } catch (err) {
+ showAuthError(err.message || 'Could not continue');
+ }
+}
+
+function continueWithoutAccount() {
+ State.auth.pendingSave = false;
+ closeAuthModal();
+ showToast('Continuing with sample/session data');
+ navigateTo('feasibility');
+}
+
+async function saveCurrentEvent(silent = false) {
+ if (!State.auth.token) return false;
+ const form = syncFormFromInputs();
+ try {
+ await apiJson('/api/events', {
+ method:'POST',
+ body: JSON.stringify({
+ name: `${form.type} in ${form.city}`,
+ eventType: form.type,
+ eventDate: form.date,
+ city: form.city,
+ guestCount: form.guests,
+ totalBudget: form.budget,
+ functions: form.functions,
+ itinerary: form.itinerary,
+ services: form.services,
+ priorities: form.priorities,
+ style: form.style
+ })
+ });
+ if (!silent) showToast('Event saved to your account');
+ return true;
+ } catch (err) {
+ if (!silent) showToast(err.message || 'Could not save event');
+ return false;
+ }
+}
+
+async function restoreAuthSession() {
+ if (!State.auth.token) {
+ updateAccountPanel();
+ return;
+ }
+ try {
+ const data = await apiJson('/api/auth/me', { method:'GET', headers:{} });
+ State.auth.user = data.user;
+ } catch {
+ State.auth.token = '';
+ localStorage.removeItem('eventra_token');
+ }
+ updateAccountPanel();
+}
+
+function logout() {
+ State.auth.user = null;
+ State.auth.token = '';
+ localStorage.removeItem('eventra_token');
+ updateAccountPanel();
+ showToast('Logged out. Sample mode is active.');
+}
+
+function updateAccountPanel() {
+ const title = document.getElementById('account-title');
+ const copy = document.getElementById('account-copy');
+ const actions = document.getElementById('account-actions');
+ if (!title || !copy || !actions) return;
+ if (State.auth.user) {
+ title.textContent = State.auth.user.name || State.auth.user.email || 'Account';
+ copy.textContent = 'Your event data can be saved.';
+ actions.innerHTML = `<button class="btn btn-ghost btn-sm btn-full" onclick="logout()">Logout</button>`;
+ } else {
+ title.textContent = 'Sample mode';
+ copy.textContent = 'Plan freely. Sign up only to save data.';
+ actions.innerHTML = `
+ <button class="btn btn-primary btn-sm btn-full" onclick="openAuthModal('signup')">Sign up to save</button>
+ <button class="btn btn-ghost btn-sm btn-full" onclick="openAuthModal('login')">Login</button>
+ `;
+ }
+ lucide.createIcons();
+}
+
 // """ UTILITY """"""""""""""""""""""""""""""""""""""""""""""""
 function emptyState(msg) {
  return `<div class="empty-state"><div class="empty-state-icon">Empty</div><h3>Nothing here yet</h3><p>${msg}</p></div>`;
@@ -1565,6 +1737,7 @@ function emptyState(msg) {
 // """ INIT """""""""""""""""""""""""""""""""""""""""""""""""""
 window.addEventListener('DOMContentLoaded', () => {
  lucide.createIcons();
+ restoreAuthSession();
  const hash = window.location.hash.replace('#','') || 'home';
  navigateTo(hash);
 });

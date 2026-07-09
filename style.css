@@ -617,6 +617,48 @@ tr:hover td{background:rgba(0,0,0,0.015)}
 .toast.show{transform:none;opacity:1}
 .toast.success::before{content:'';color:var(--green)}
 
+.account-panel{
+  margin:auto 0 0;padding:14px 0 0;border-top:1px solid var(--line);
+}
+.account-state{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.account-avatar{
+  width:34px;height:34px;border-radius:12px;background:var(--soft-coral);
+  color:var(--coral);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.account-avatar svg{width:17px;height:17px}
+.account-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.2}
+.account-copy{font-size:11px;font-weight:700;color:var(--grey);line-height:1.35}
+.account-actions{display:flex;flex-direction:column;gap:8px}
+
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(26,29,46,.42);
+  z-index:10000;display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-backdrop.hidden{display:none}
+.auth-modal-card{
+  width:min(430px,100%);background:#fff;border:1px solid var(--line);
+  border-radius:22px;padding:28px;box-shadow:var(--shadow-lg);position:relative;
+}
+.modal-close{
+  position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--grey);
+}
+.modal-close:hover{background:var(--soft)}
+.modal-close svg{width:18px;height:18px}
+.auth-modal-icon{
+  width:46px;height:46px;border-radius:16px;background:var(--soft-coral);
+  color:var(--coral);display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+}
+.auth-modal-icon svg{width:22px;height:22px}
+.auth-modal-card h2{font-size:22px;margin-bottom:6px}
+.auth-modal-card p{font-size:14px;color:var(--grey);font-weight:700;margin-bottom:18px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.auth-tab{
+  padding:10px;border-radius:12px;background:var(--soft);font-size:14px;font-weight:900;color:var(--grey);
+}
+.auth-tab.active{background:var(--soft-coral);color:var(--coral)}
+
 /* === 32. MOBILE / RESPONSIVE ================================ */
 .bottom-nav{display:none}
 

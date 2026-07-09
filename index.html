@@ -36,6 +36,19 @@
  <li><a href="#dashboard" class="nav-item" data-route="dashboard"><i data-lucide="line-chart"></i><span>Dashboard</span></a></li>
  <li class="nav-questions"><a href="#questions" class="nav-item" data-route="questions"><i data-lucide="help-circle"></i><span>Questions</span></a></li>
  </ul>
+ <div class="account-panel" id="account-panel">
+ <div class="account-state">
+ <div class="account-avatar"><i data-lucide="user"></i></div>
+ <div>
+ <div class="account-title" id="account-title">Sample mode</div>
+ <div class="account-copy" id="account-copy">Plan freely. Sign up only to save data.</div>
+ </div>
+ </div>
+ <div class="account-actions" id="account-actions">
+ <button class="btn btn-primary btn-sm btn-full" onclick="openAuthModal('signup')">Sign up to save</button>
+ <button class="btn btn-ghost btn-sm btn-full" onclick="openAuthModal('login')">Login</button>
+ </div>
+ </div>
 </nav>
 
 <!-- -------------------- MAIN -------------------- -->
@@ -706,6 +719,35 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- Optional Auth Modal -->
+<div class="modal-backdrop hidden" id="auth-modal">
+ <div class="auth-modal-card">
+ <button class="modal-close" onclick="closeAuthModal()" aria-label="Close"><i data-lucide="x"></i></button>
+ <div class="auth-modal-icon"><i data-lucide="lock-keyhole"></i></div>
+ <h2 id="auth-modal-title">Save your event data</h2>
+ <p id="auth-modal-copy">Create an account to save this plan, or continue with sample/session data.</p>
+ <div class="auth-tabs">
+ <button class="auth-tab active" id="auth-tab-signup" onclick="setAuthMode('signup')">Sign up</button>
+ <button class="auth-tab" id="auth-tab-login" onclick="setAuthMode('login')">Login</button>
+ </div>
+ <div class="form-group" id="auth-name-group">
+ <label class="form-label">Name</label>
+ <input class="form-input" id="auth-name" type="text" placeholder="Your name">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Email</label>
+ <input class="form-input" id="auth-email" type="email" placeholder="you@example.com">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Password</label>
+ <input class="form-input" id="auth-password" type="password" placeholder="Minimum 6 characters">
+ </div>
+ <div class="form-error hidden" id="auth-error"></div>
+ <button class="btn btn-primary btn-full" onclick="submitAuth()" id="auth-submit">Create account and save</button>
+ <button class="btn btn-ghost btn-full mt-2" onclick="continueWithoutAccount()">Continue with sample data</button>
+ </div>
+</div>
 
 <script src="data.js"></script>
 <script src="app.js"></script>
